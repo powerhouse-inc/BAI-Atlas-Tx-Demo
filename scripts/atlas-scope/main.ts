@@ -4,26 +4,29 @@ import {
   createReactorAndCreateLocalDrive,
   sleep,
 } from "scripts/utils/drive-actions";
-import jsonScopes from "./scope.json";
-import jsonMasterStatus from "./masterStatus.json";
-import notionScopes from "../data/notion-pages/scope.json";
-import notionArticles from "../data/notion-pages/article.json";
+import jsonScopes from "./data/pages/scope.json";
+import jsonMasterStatus from "./data/pages/masterStatus.json";
+import notionScopes from "./data/notion-pages/scope.json";
+import notionArticles from "./data/notion-pages/article.json";
 import { addArticles, populateScope } from "scripts/utils/atlas-actions";
 import { DocumentDriveDocument } from "document-model-libs/document-drive";
 import { IBaseDocumentDriveServer } from "document-drive";
 async function main() {
+  console.time('...duration')
+  console.log('Creating Atlas Documents...')
+
   const driveServer = (await createReactorAndCreateLocalDrive(
     "http://localhost:4001/d/powerhouse"
   )) as IBaseDocumentDriveServer;
 
   const driveIds = await driveServer.getDrives();
-  console.log(driveIds);
+  // console.log(driveIds);
   let drive = await driveServer.getDrive(driveIds[0]);
-  console.log(drive.state);
-  console.log(driveIds[0]);
+  // console.log(drive.state);
+  // console.log(driveIds[0]);
   await addFolder(driveServer, driveIds[0], "sky-atlas", "Sky Atlas");
   drive = await driveServer.getDrive(driveIds[0]);
-  console.log(drive.state.global.nodes);
+  // console.log(drive.state.global.nodes);
   const rootDirId = drive.state.global.nodes.find(
     (e) => e.name === "Sky Atlas"
   );
@@ -74,6 +77,8 @@ async function main() {
   }
 
   await sleep(1000);
+
+  console.timeEnd('...duration')
   process.exit(0);
 }
 
