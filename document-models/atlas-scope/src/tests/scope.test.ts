@@ -24,7 +24,7 @@ describe("Scope Operations", () => {
     // const id = documentModelUtils.hashKey();
 
     const input: UpdateScopeInput = {
-      masterStatus: ['PLACEHOLDER'],
+      masterStatus: 'PLACEHOLDER',
       globalTags: ['RECURSIVE_IMPROVEMENT'],
     }
 
@@ -34,7 +34,7 @@ describe("Scope Operations", () => {
     expect(updatedDocument.operations.global[0].type).toBe("UPDATE_SCOPE");
     expect(updatedDocument.operations.global[0].input).toStrictEqual(input);
     expect(updatedDocument.operations.global[0].index).toEqual(0);
-    expect(updatedDocument.state.global.masterStatus).toEqual(['PLACEHOLDER']);
+    expect(updatedDocument.state.global.masterStatus).toEqual('PLACEHOLDER');
     expect(updatedDocument.state.global.globalTags).toEqual(['RECURSIVE_IMPROVEMENT']);
   });
 
@@ -43,7 +43,7 @@ describe("Scope Operations", () => {
     // const id = documentModelUtils.hashKey();
 
     const input: UpdateScopeInput = {
-      masterStatus: ['PLACEHOLDER'],
+      masterStatus: 'PLACEHOLDER',
     }
 
     const updatedDocument = reducer(document, creators.updateScope(input));
@@ -52,7 +52,7 @@ describe("Scope Operations", () => {
     expect(updatedDocument.operations.global[0].type).toBe("UPDATE_SCOPE");
     expect(updatedDocument.operations.global[0].input).toStrictEqual(input);
     expect(updatedDocument.operations.global[0].index).toEqual(0);
-    expect(updatedDocument.state.global.masterStatus).toEqual(['PLACEHOLDER']);
+    expect(updatedDocument.state.global.masterStatus).toEqual('PLACEHOLDER');
   });
 
   it("should handle populateScope operation", () => {
@@ -63,7 +63,7 @@ describe("Scope Operations", () => {
       name: 'Test Scope',
       docNo: 'A.1',
       content: 'This is a test scope',
-      masterStatus: ['PLACEHOLDER'],
+      masterStatus: 'PLACEHOLDER',
       globalTags: ['RECURSIVE_IMPROVEMENT'],
       originalContextData: ['PHID'],
       provenance: 'https://p0hub.com',
@@ -79,7 +79,7 @@ describe("Scope Operations", () => {
     expect(updatedDocument.state.global.name).toEqual('Test Scope');
     expect(updatedDocument.state.global.docNo).toEqual('A.1');
     expect(updatedDocument.state.global.content).toEqual('This is a test scope');
-    expect(updatedDocument.state.global.masterStatus).toEqual(['PLACEHOLDER']);
+    expect(updatedDocument.state.global.masterStatus).toEqual('PLACEHOLDER');
     expect(updatedDocument.state.global.globalTags).toEqual(['RECURSIVE_IMPROVEMENT']);
     expect(updatedDocument.state.global.originalContextData).toEqual(['PHID']);
     expect(updatedDocument.state.global.provenance).toEqual('https://p0hub.com');
