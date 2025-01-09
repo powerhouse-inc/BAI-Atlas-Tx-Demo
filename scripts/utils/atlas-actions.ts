@@ -27,7 +27,7 @@ export const populateScope = (
           }
           return statusObject.nameString.toUpperCase();
         })
-        .flat(),
+        .flat()[0],
       globalTags: ["CAIS"],
       originalContextData: ["somePHID"],
       provenance: provenanceUrl,
