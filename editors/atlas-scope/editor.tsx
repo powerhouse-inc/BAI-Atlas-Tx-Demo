@@ -7,25 +7,31 @@ import {
   UrlField,
 } from "@powerhousedao/design-system/dist/scalars";
 import { AtlasScopeScopeOperations } from "document-models/atlas-scope/gen/scope/operations";
+import { actions } from "../../document-models/atlas-scope";
+import { useEffect } from 'react';
 
 export type IProps = EditorProps<unknown, Action, AtlasScopeScopeOperations>;
 
 export default function Editor(props: IProps) {
-  const { document, dispatch } = props;
+  const { document, dispatch, context } = props;
   const {
     state: { global: state },
   } = document;
 
+  useEffect(() => {
+    console.log('State updated:', state);
+  }, [state]);
+
   const handleSubmit = (values: Record<string, any>) => {
     const filteredValues = Object.fromEntries(
-      Object.entries(values).filter(([_, value]) => value !== null),
+      Object.entries(values).filter(([_, value]) => value !== null)
     );
 
-    dispatch({
-      type: "updateScopeOperation",
-      input: filteredValues,
-      scope: "global",
-    });
+    dispatch(
+      actions.updateScope({
+        ...filteredValues,
+      })
+    );
   };
 
   return (
