@@ -62,7 +62,7 @@ enum GlobalTag {
 # scope
 
 input UpdateScopeInput {
-  masterStatus: [Status!]
+  masterStatus: Status
   globalTags: [GlobalTag!]
 }
 
@@ -70,7 +70,7 @@ input PopulateScopeInput {
   name: String
   docNo: String # e.g, A.1
   content: String # change to markdown later (includes links, tables...)
-  masterStatus: [Status!]
+  masterStatus: Status
   globalTags: [GlobalTag!]
 	originalContextData: [PHID!]
 	provenance: URL # p0Hub backlink

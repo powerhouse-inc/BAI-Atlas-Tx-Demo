@@ -64,7 +64,7 @@ input UpdateFoundationInput {
   name: String
   atlasType: FAtlasType!
   content: String
-  masterStatus: [FStatus!]
+  masterStatus: FStatus
   globalTags: [FGlobalTag!]
   references: [PHID!]
 }
