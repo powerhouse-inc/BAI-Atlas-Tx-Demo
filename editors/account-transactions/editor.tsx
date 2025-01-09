@@ -251,7 +251,7 @@ export default function Editor(props: IProps) {
 
       {/* Transactions List */}
       <div>
-        {state.transactions.map((transaction) => (
+        {state?.transactions?.map((transaction) => (
           <div
             key={transaction.id}
             style={{
