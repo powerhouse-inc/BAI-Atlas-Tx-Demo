@@ -1,0 +1,11 @@
+/dist
+/coverage
+/node_modules
+/storybook-static
+/.ph
+
+**/gen
+
+.env.local
+
+bun.lockb
