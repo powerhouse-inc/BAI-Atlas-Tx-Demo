@@ -9,10 +9,10 @@ import { AtlasScopeScopeOperations } from "../../gen/scope/operations";
 export const reducer: AtlasScopeScopeOperations = {
   updateScopeOperation(state, action, dispatch) {
     if ('masterStatus' in action.input) {
-      state.masterStatus = action.input.masterStatus || []
+      state.masterStatus = action.input.masterStatus || "PLACEHOLDER";
     }
     if ('globalTags' in action.input) {
-      state.globalTags = action.input.globalTags || []
+      state.globalTags = action.input.globalTags || [];
     }
   },
   populateScopeOperation(state, action, dispatch) {
@@ -26,7 +26,7 @@ export const reducer: AtlasScopeScopeOperations = {
       state.content = action.input.content || '';
     }
     if ('masterStatus' in action.input) {
-      state.masterStatus = action.input.masterStatus || [];
+      state.masterStatus = action.input.masterStatus || "PLACEHOLDER";
     }
     if ('globalTags' in action.input) {
       state.globalTags = action.input.globalTags || [];
