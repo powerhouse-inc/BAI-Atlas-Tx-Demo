@@ -56,7 +56,7 @@
     "@powerhousedao/codegen": "^0.25.0",
     "@powerhousedao/config": "1.4.0",
     "@powerhousedao/connect": "1.0.0-dev.180",
-    "@powerhousedao/design-system": "1.17.0",
+    "@powerhousedao/design-system": "1.9.1-canary.104",
     "@powerhousedao/ph-cli": "^0.15.3",
     "@powerhousedao/reactor-api": "^1.14.5",
     "@powerhousedao/reactor-local": "^1.12.5",
