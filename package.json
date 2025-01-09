@@ -94,6 +94,7 @@
   },
   "description": "",
   "dependencies": {
+    "canvas-confetti": "^1.9.3",
     "document-drive": "^1.10.1",
     "dotenv": "^16.4.7",
     "luxon": "^3.5.0",
