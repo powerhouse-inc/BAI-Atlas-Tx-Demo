@@ -1,6 +1,6 @@
-# Atlas Scope Document Models
+# BAI Data Integration Demo
 
-This is a collection of document models for the Atlas Scope project.
+This demo illustrates how data from different data sources can be integrated into document models. In this demo, we are using `atlas-scope`, `atlas-foundation` and `account-transactions` document models.
 
 
 ## Setup
@@ -12,9 +12,12 @@ To run connect with reactor follow below steps:
 
 1. `bun install`
 2. `bun generate` - this will generate the document models code from the schemas
-3. `bun reactor` - this will start the reactor server
-4. In connect `http://localhost:3000/` - On the left hand side menu, click  on the + sign of `Public Drives`and add the `http://localhost:4001/d/powerhouse` url drive. After adding the drive you now should see a `Powerhouse` drive in the list of public drives.
-5. Back in your code editor/terminal run `bun scripts/atlas-scope/main.ts` - this will start the script that will populate the scope documents with the data.
+3. `bun dev` - this will start the reactor server
+4. In connect `http://localhost:3000/` - On the left hand side menu, click  on the + sign of `Public Drives`and add the `http://localhost:4001/d/powerhouse` url drive. After adding the drive you now should see a `Powerhouse` drive in the list of public drives. Do this if it's not already added.
+
+### Sky Atlas Script
+
+1. Back in your code editor/terminal run `bun scripts/atlas-scope/main.ts` - this will start the script that will populate the scope documents with the data.
 
 Final output should be: 
 
@@ -46,3 +49,26 @@ Powerhouse/
 └── A.5 The Accessibility Scope/
 └── A.5 The Accessibility Scope
 ```
+
+### Account Transactions Script
+
+1. Back in your code editor/terminal run `bun scripts/account-transactions/main.ts` - this will start the script that will populate the account transactions documents with the data.
+
+Final output should be: 
+
+```bash
+bun scripts/account-transactions/main.ts
+[1.77s] script
+```
+
+### Troubleshooting
+
+If there are any issues with connect, or the reactor or the scripts, try below steps:
+
+In terminal:
+- remove `.ph` folder
+- re run `bun dev`
+
+In connect:
+- clear site data (inspect -> application -> `clear site data`	) 
+- re add `Powerhouse` drive if necessary
