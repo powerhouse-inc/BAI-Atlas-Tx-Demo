@@ -52,14 +52,15 @@ Powerhouse/
 
 ### Account Transactions Script
 
-1. Back in your code editor/terminal run `bun scripts/account-transactions/main.ts` - this will start the script that will populate the account transactions documents with the data.
+1. Back in your code editor/terminal run `bun scripts/account-transactions/server/importScript.ts` - this will start the script that will populate the account transactions documents with the data.
 
-Final output should be: 
+#### Live Transaction Data Flow
 
-```bash
-bun scripts/account-transactions/main.ts
-[1.77s] script
-```
+Setup reactor, server and ngrok. 
+- `bun dev` - start the reactor server
+- `bun scripts/account-transactions/server/server.ts` - start the server that will receive the transaction data
+- `ngrok http 3001 --url=<your-static-ngrok-url>` - start the ngrok server or use `ngrok http 3001` without the static url
+
 
 ### Troubleshooting
 
