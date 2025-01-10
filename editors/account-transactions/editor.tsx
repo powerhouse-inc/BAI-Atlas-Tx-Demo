@@ -1,5 +1,5 @@
 import { EditorProps } from "document-model/document";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AccountTransactionsState,
   AccountTransactionsAction,
@@ -7,7 +7,7 @@ import {
   actions,
 } from "../../document-models/account-transactions";
 import { utils as documentModelUtils } from "document-model/document";
-
+import { formatTokenAmount, getTokenSymbol } from "./utils";
 export type IProps = EditorProps<
   AccountTransactionsState,
   AccountTransactionsAction,
@@ -21,7 +21,7 @@ export default function Editor(props: IProps) {
   } = document;
 
   const [transactionType, setTransactionType] = useState<"crypto" | "bank">(
-    "crypto",
+    "crypto"
   );
   const [newTransaction, setNewTransaction] = useState({
     fromAccount: "",
@@ -38,6 +38,23 @@ export default function Editor(props: IProps) {
     transactionId: string;
     budget: string;
   } | null>(null);
+
+  const [tokenSymbols, setTokenSymbols] = useState<Record<string, string>>({});
+  const [formattedAmounts, setFormattedAmounts] = useState<
+    Record<string, string>
+  >({});
+
+  // useEffect(() => {
+  //   state?.transactions?.forEach(async (transaction: any) => {
+  //     if ("crypto" in transaction.details) {
+  //       const symbol = await getTokenSymbol(transaction.details.crypto.token);
+  //       setTokenSymbols((prev) => ({
+  //         ...prev,
+  //         [transaction.details.crypto.token]: symbol,
+  //       }));
+  //     }
+  //   });
+  // }, [state?.transactions]);
 
   const handleCreateTransaction = () => {
     const details =
@@ -63,7 +80,7 @@ export default function Editor(props: IProps) {
         amount: parseFloat(newTransaction.amount),
         datetime: new Date().toISOString(),
         details,
-      }),
+      })
     );
 
     setNewTransaction({
@@ -85,7 +102,7 @@ export default function Editor(props: IProps) {
       actions.updateTransactionBudget({
         txId: transactionId,
         budgetId: editingBudget.budget,
-      }),
+      })
     );
 
     setEditingBudget(null);
@@ -265,23 +282,46 @@ export default function Editor(props: IProps) {
               <h3 style={{ fontWeight: "bold" }}>
                 {transaction.fromAccount} → {transaction.toAccount}
               </h3>
-              <p style={{ fontSize: "14px" }}>Amount: {transaction.amount}</p>
+              <p style={{ fontSize: "14px" }}>
+                Amount: {formatTokenAmount(transaction.amount)}
+              </p>
               <p style={{ fontSize: "14px" }}>
                 Date: {new Date(transaction.datetime).toLocaleString()}
               </p>
               <p style={{ fontSize: "14px" }}>
-                Type: {transaction.details.__typename}
+                Type:{" "}
+                {Object.hasOwn(transaction.details, "crypto")
+                  ? "Crypto"
+                  : "Bank"}
               </p>
-              {transaction.details.__typename === "CryptoTransactionDetails" ? (
+              {Object.hasOwn(transaction.details, "crypto") ? (
                 <>
                   <p style={{ fontSize: "14px" }}>
-                    Hash: {transaction.details.txHash}
+                    Hash:{" "}
+                    <a
+                      href={`https://etherscan.io/tx/${transaction.details.crypto.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#007bff" }}
+                    >
+                      {transaction.details.crypto.txHash}
+                    </a>
                   </p>
                   <p style={{ fontSize: "14px" }}>
-                    Token: {transaction.details.token}
+                    Token:{" "}
+                    {tokenSymbols[transaction.details.crypto.token] ||
+                      transaction.details.crypto.token}
                   </p>
                   <p style={{ fontSize: "14px" }}>
-                    Block: {transaction.details.blockNumber}
+                    Block:{" "}
+                    <a
+                      href={`https://etherscan.io/block/${transaction.details.crypto.blockNumber}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#007bff" }}
+                    >
+                      {transaction.details.crypto.blockNumber}
+                    </a>
                   </p>
                 </>
               ) : (
