@@ -17,7 +17,7 @@ export const populateScope = (
     atlasScopeActions.populateScope({
       name: scope.nameString,
       docNo: scope.docNoString,
-      content: scope.content[0].plain_text,
+      content: scope.content[0].text[0].plain_text,
       masterStatus: scope.masterStatus
         .map((s: any) => {
           const masterStatus = jsonMasterStatus as Record<string, any>;

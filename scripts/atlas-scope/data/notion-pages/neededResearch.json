@@ -45,7 +45,7 @@
           "string": "Conflicting Atlas Edit Proposals"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -141,7 +141,7 @@
           "string": "Derecognition Uncertainty Due To Anonymous Actors"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -237,7 +237,7 @@
           "string": "Addressing Misalignment Of Ecosystem Actors Or Other Governance Participants"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -333,7 +333,7 @@
           "string": "Criteria For AD Voting-Communication Requirement"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -429,7 +429,7 @@
           "string": "AD Whistleblower Bounty"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -525,7 +525,7 @@
           "string": "AD Budget Management"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -621,7 +621,7 @@
           "string": "Derecognition Procedure"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -717,7 +717,7 @@
           "string": "Systematic basis of adjudication, fact-finding and evidence"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -849,7 +849,7 @@
           "string": "Defining \"severe actions or violations\" and “governance attack”"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -945,7 +945,7 @@
           "string": "Defining threshold for \"very mild slippery slope\" breaches"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -1041,7 +1041,7 @@
           "string": "Impact Of Extenuating Circumstances"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -1137,7 +1137,7 @@
           "string": "Clarification of \"Good Cause\""
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -1236,7 +1236,7 @@
           "string": "Operational Security Protocols - Research Track"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -1368,7 +1368,7 @@
           "string": "Should team contributors be subject to the ban against occupying two ecosystem roles?"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -1464,7 +1464,7 @@
           "string": "Should ban against occupying two ecosystem roles apply to all Sky stakeholder roles?"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -1596,7 +1596,7 @@
           "string": "Potential value of reputation system for Ecosystem Actors"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -1692,7 +1692,7 @@
           "string": "Impact of misalignment on Entity's involvement with Ecosystem Actor"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
@@ -1820,7 +1820,7 @@
           "string": "Clear guidelines needed to determine whether an act is ‘slippery slope’ or severe misalignment"
         }
       },
-      "Research Prompt": {
+      "Content": {
         "id": "%7D%7C%3FT",
         "type": "rich_text",
         "rich_text": [
