@@ -50,6 +50,45 @@ Powerhouse/
 └── A.5 The Accessibility Scope
 ```
 
+### Verify number of created documents
+
+In the local graphql playground: `http://localhost:4001/analytics`
+
+Paste the below query and run it:
+
+```graphql
+query Analytics($filter: AnalyticsFilter) {
+  analytics {
+    series(filter: $filter) {
+      period
+      start
+      end
+      rows {
+        value
+        unit
+        metric
+      }
+    }
+  }
+}
+
+{
+  "filter": {
+    "start": "2025-01-01",
+    "metrics": "DocumentCount",
+    "granularity": "total",
+    "end": "2025-01-10",
+    "dimensions": [
+      {
+        "select": "ph",
+        "name": "document-type",
+        "lod": 4
+      }
+    ],
+    "currency": null
+  }
+```
+
 ### Account Transactions Script
 
 1. Back in your code editor/terminal run `bun scripts/account-transactions/server/importScript.ts` - this will start the script that will populate the account transactions documents with the data.
