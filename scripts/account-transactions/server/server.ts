@@ -12,10 +12,12 @@ const server = http.createServer((req: any, res: any) => {
 
             try {
                 const jsonData = JSON.parse(body);
-                console.log(`${jsonData.erc20Transfers.length} transactions received`);
+                if (jsonData.erc20Transfers) {
+                    console.log(`${jsonData.erc20Transfers.length} transactions received`);
+                    // Import transactions
+                    await importTransactions(jsonData);
+                }
 
-                // Import transactions
-                await importTransactions(jsonData);
 
                 // Immediately acknowledge receipt
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
