@@ -77,7 +77,7 @@ query Analytics($filter: AnalyticsFilter) {
     "start": "2025-01-01",
     "metrics": "DocumentCount",
     "granularity": "total",
-    "end": "2025-01-10",
+    "end": "2025-01-15",
     "dimensions": [
       {
         "select": "ph",
