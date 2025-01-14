@@ -24,11 +24,11 @@ async function main() {
   let drive = await driveServer.getDrive(driveIds[0]);
   // console.log(drive.state);
   // console.log(driveIds[0]);
-  await addFolder(driveServer, driveIds[0], "sky-atlas", "Sky Atlas");
+  await addFolder(driveServer, driveIds[0], "sky-atlas-docs", "Sky Atlas Docs");
   drive = await driveServer.getDrive(driveIds[0]);
   // console.log(drive.state.global.nodes);
   const rootDirId = drive.state.global.nodes.find(
-    (e) => e.name === "Sky Atlas"
+    (e) => e.name === "Sky Atlas Docs"
   );
   if (!rootDirId) {
     throw new Error("Root directory not found");
