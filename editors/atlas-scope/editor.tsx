@@ -23,15 +23,25 @@ export default function Editor(props: IProps) {
   }, [state]);
 
   const handleSubmit = (values: Record<string, any>) => {
-    const filteredValues = Object.fromEntries(
-      Object.entries(values).filter(([_, value]) => value !== null)
-    );
+    console.log('Values:', values);
+    // Check if masterStatus or globalTags have changed
+    if (values.masterStatus !== state.masterStatus) {
+      dispatch(
+        actions.updateScope({
+          masterStatus: values.masterStatus
+        })
+      );
+      return;
+    }
 
-    dispatch(
-      actions.updateScope({
-        ...filteredValues,
-      })
-    );
+    if (values.globalTags !== state.globalTags) {
+      dispatch(
+        actions.updateScope({
+          globalTags: values.globalTags
+        })
+      );
+      return;
+    }
   };
 
   return (
