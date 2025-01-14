@@ -6,11 +6,11 @@ import {
   StringField,
   UrlField,
 } from "@powerhousedao/design-system/dist/scalars";
-import { AtlasScopeScopeOperations } from "document-models/atlas-scope/gen/scope/operations";
-import { actions } from "../../document-models/atlas-scope";
+import { AtlasFoundationArticleOperations } from "document-models/atlas-foundation/gen/article/operations";
+import { actions } from "../../document-models/atlas-foundation";
 import { useEffect } from 'react';
 
-export type IProps = EditorProps<unknown, Action, AtlasScopeScopeOperations>;
+export type IProps = EditorProps<unknown, Action, AtlasFoundationArticleOperations>;
 
 export default function Editor(props: IProps) {
   const { document, dispatch, context } = props;
@@ -27,8 +27,9 @@ export default function Editor(props: IProps) {
     // Check if masterStatus or globalTags have changed
     if (values.masterStatus !== state.masterStatus) {
       dispatch(
-        actions.updateScope({
-          masterStatus: values.masterStatus
+        actions.updateFoundation({
+          masterStatus: values.masterStatus,
+          atlasType: values.atlasType
         })
       );
       return;
@@ -36,8 +37,9 @@ export default function Editor(props: IProps) {
 
     if (values.globalTags !== state.globalTags) {
       dispatch(
-        actions.updateScope({
-          globalTags: values.globalTags
+        actions.updateFoundation({
+          globalTags: values.globalTags,
+          atlasType: values.atlasType
         })
       );
       return;
