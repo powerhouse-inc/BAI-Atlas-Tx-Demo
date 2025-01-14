@@ -53,7 +53,7 @@ export const populateArticle = (
       atlasType: "ARTICLE",
       content: article.properties["Content"].rich_text[0].plain_text,
       masterStatus: "PLACEHOLDER",
-      globalTags: ["CAIS_"],
+      globalTags: ["CAIS"],
       references: [],
       originalContextData: article.properties[
         "Original Context Data"
