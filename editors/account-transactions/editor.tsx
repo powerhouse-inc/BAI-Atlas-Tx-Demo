@@ -8,7 +8,7 @@ import {
 } from "../../document-models/account-transactions";
 import { utils as documentModelUtils } from "document-model/document";
 import { formatTokenAmount, getTokenSymbol } from "./utils";
-import styles from './editor.module.css';
+import styles from "./editor.module.css";
 
 export type IProps = EditorProps<
   AccountTransactionsState,
@@ -46,7 +46,9 @@ export default function Editor(props: IProps) {
     Record<string, string>
   >({});
 
-  useEffect(() => {}, [state?.transactions]);
+  useEffect(() => {
+    console.log("State updated:", state?.transactions);
+  }, [state?.transactions]);
 
   const handleCreateTransaction = () => {
     const details =
@@ -98,6 +100,13 @@ export default function Editor(props: IProps) {
     );
 
     setEditingBudget(null);
+  };
+
+  const getSortedTransactions = () => {
+    if (!state?.transactions) return [];
+    return [...state.transactions].sort(
+      (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
+    );
   };
 
   return (
@@ -260,9 +269,7 @@ export default function Editor(props: IProps) {
 
       {/* Transactions List */}
       <div>
-        {state?.transactions
-          ?.sort((a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime())
-          .map((transaction) => (
+        {getSortedTransactions().map((transaction) => (
           <div
             key={transaction.id}
             className={styles.transactionItem}
@@ -336,7 +343,11 @@ export default function Editor(props: IProps) {
             <div style={{ marginTop: "10px" }}>
               {editingBudget?.transactionId === transaction.id ? (
                 <div
-                  style={{ display: "flex", gap: "10px", alignItems: "center" }}
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "center",
+                  }}
                 >
                   <input
                     type="text"
@@ -383,7 +394,11 @@ export default function Editor(props: IProps) {
                 </div>
               ) : (
                 <div
-                  style={{ display: "flex", gap: "10px", alignItems: "center" }}
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "center",
+                  }}
                 >
                   <p style={{ fontSize: "14px" }}>
                     Budget: {transaction.budget || "Not assigned"}
@@ -412,7 +427,6 @@ export default function Editor(props: IProps) {
             <div style={{ marginTop: "10px" }}>
               <button
                 onClick={() => {
-                  console.log('Deleting transaction:', transaction.id);
                   dispatch(actions.deleteTransaction({ id: transaction.id }));
                 }}
                 style={{
