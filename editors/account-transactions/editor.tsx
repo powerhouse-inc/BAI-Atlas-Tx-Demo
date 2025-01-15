@@ -8,6 +8,8 @@ import {
 } from "../../document-models/account-transactions";
 import { utils as documentModelUtils } from "document-model/document";
 import { formatTokenAmount, getTokenSymbol } from "./utils";
+import styles from './editor.module.css';
+
 export type IProps = EditorProps<
   AccountTransactionsState,
   AccountTransactionsAction,
@@ -44,17 +46,7 @@ export default function Editor(props: IProps) {
     Record<string, string>
   >({});
 
-  // useEffect(() => {
-  //   state?.transactions?.forEach(async (transaction: any) => {
-  //     if ("crypto" in transaction.details) {
-  //       const symbol = await getTokenSymbol(transaction.details.crypto.token);
-  //       setTokenSymbols((prev) => ({
-  //         ...prev,
-  //         [transaction.details.crypto.token]: symbol,
-  //       }));
-  //     }
-  //   });
-  // }, [state?.transactions]);
+  useEffect(() => {}, [state?.transactions]);
 
   const handleCreateTransaction = () => {
     const details =
@@ -268,9 +260,12 @@ export default function Editor(props: IProps) {
 
       {/* Transactions List */}
       <div>
-        {state?.transactions?.map((transaction) => (
+        {state?.transactions
+          ?.sort((a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime())
+          .map((transaction) => (
           <div
             key={transaction.id}
+            className={styles.transactionItem}
             style={{
               padding: "15px",
               border: "1px solid #ccc",
@@ -299,7 +294,7 @@ export default function Editor(props: IProps) {
                   <p style={{ fontSize: "14px" }}>
                     Hash:{" "}
                     <a
-                      href={`https://etherscan.io/tx/${transaction.details.crypto.txHash}`}
+                      href={`https://basescan.org/tx/${transaction.details.crypto.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: "#007bff" }}
@@ -315,7 +310,7 @@ export default function Editor(props: IProps) {
                   <p style={{ fontSize: "14px" }}>
                     Block:{" "}
                     <a
-                      href={`https://etherscan.io/block/${transaction.details.crypto.blockNumber}`}
+                      href={`https://basescan.org/block/${transaction.details.crypto.blockNumber}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: "#007bff" }}
@@ -416,9 +411,10 @@ export default function Editor(props: IProps) {
             </div>
             <div style={{ marginTop: "10px" }}>
               <button
-                onClick={() =>
-                  dispatch(actions.deleteTransaction({ id: transaction.id }))
-                }
+                onClick={() => {
+                  console.log('Deleting transaction:', transaction.id);
+                  dispatch(actions.deleteTransaction({ id: transaction.id }));
+                }}
                 style={{
                   padding: "6px 12px",
                   backgroundColor: "#dc3545",

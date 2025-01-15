@@ -51,11 +51,11 @@ export function formatTokenAmount(
     const amountBN = BigInt(amount);
     
     // Format the number with proper decimals
-    const formattedAmount = ethers.formatUnits(amountBN, 18);
+    const formattedAmount = ethers.formatUnits(amountBN, 6);
     
     // Add commas and return
     return new Intl.NumberFormat('en-US', {
-      maximumFractionDigits: 18,
+      maximumFractionDigits: 6,
     }).format(parseFloat(formattedAmount));
   } catch (error) {
     console.error('Error formatting token amount:', error);
