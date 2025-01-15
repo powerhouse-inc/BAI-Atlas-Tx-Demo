@@ -62,9 +62,6 @@ export class DocumentAnalyticsProcessor extends AnalyticsProcessor<DocumentType>
             },
           });
         }
-        if (operation.type === "DELETE_NODE") {
-          await this.clearSource(source);
-        }
       }
     }
   }
