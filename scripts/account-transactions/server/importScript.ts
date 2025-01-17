@@ -110,4 +110,4 @@ export const importTransactions = async (incomingTransactions: TransactionData):
     }
 };
 
-// await importTransactions(incomingTransactions);
+await importTransactions(incomingTransactions);
