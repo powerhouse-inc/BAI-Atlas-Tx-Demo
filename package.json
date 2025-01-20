@@ -52,7 +52,6 @@
     "@eslint/compat": "^1.2.4",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.17.0",
-    "@powerhousedao/analytics-engine-core": "^0.3.0",
     "@powerhousedao/codegen": "^0.25.0",
     "@powerhousedao/config": "1.4.0",
     "@powerhousedao/connect": "1.0.0-sky.187",
@@ -94,6 +93,7 @@
   },
   "description": "",
   "dependencies": {
+    "@powerhousedao/analytics-engine-core": "^0.3.2",
     "@types/canvas-confetti": "^1.9.0",
     "canvas-confetti": "^1.9.3",
     "document-drive": "^1.10.1",
