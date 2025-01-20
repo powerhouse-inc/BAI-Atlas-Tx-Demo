@@ -153,7 +153,7 @@ export class DocumentAnalyticsProcessor extends AnalyticsProcessor<DocumentType>
     }
 
     if (values.length > 0) {
-      //log('Adding values', JSON.stringify(values, null, 2));
+      log('Adding values', JSON.stringify(values, null, 2));
 
       // batch insert
       try {
