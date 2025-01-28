@@ -3,4 +3,4 @@
  * Delete the file and run the code generator again to have it reset
  */
 
-export * as DocumentAnalyticsProcessor from "./document-analytics";
+// export * as DocumentAnalyticsProcessor from "./document-analytics";

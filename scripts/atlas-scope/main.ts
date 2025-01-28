@@ -11,6 +11,8 @@ import notionArticles from "./data/notion-pages/article.json";
 import { addArticles, populateScope } from "scripts/utils/atlas-actions";
 import { DocumentDriveDocument } from "document-model-libs/document-drive";
 import { IBaseDocumentDriveServer } from "document-drive";
+
+
 async function main() {
   console.time('...duration')
   console.log('Creating Atlas Documents...')
