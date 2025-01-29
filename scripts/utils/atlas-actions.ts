@@ -156,13 +156,42 @@ export const addSections = async (
       continue;
     }
 
-    await addFolder(
-      driveServer,
-      driveId,
-      section.id + "-folder",
-      section.properties["Doc No (or Temp Name)"].title[0].plain_text,
-      parentFolderId
-    );
+    const sectionName = section.properties["Doc No (or Temp Name)"].title[0].plain_text;
+    if (sectionName === 'A.0.1 - A1 - Atlas Preamble - Definitions' || sectionName === 'A.0.1 - A2 - Atlas Preamble - General Provisions') {
+      console.log(sectionName)
+      await addFolder(
+        driveServer,
+        driveId,
+        section.id + "-folder",
+        section.properties["Doc No (or Temp Name)"].title[0].plain_text,
+        parentFolderId
+      );
+
+      await addDocument(
+        driveServer,
+        driveId,
+        section.id + "-document",
+        section.properties["Doc No (or Temp Name)"].title[0].plain_text,
+        "sky/atlas-foundation",
+        section.id + "-folder"
+      );
+
+      await populateSection(
+        driveServer,
+        driveId,
+        section.id + "-document",
+        section,
+        article
+      );
+    }
+    // const sectionNameParts = sectionName.split('.');
+    // const hasThreeNumbers = sectionNameParts.length === 4 && sectionNameParts.every((part: string, index: number) => index === 0 || !isNaN(Number(part)));
+
+    // if (!hasThreeNumbers) {
+    //   continue;
+    // }
+
+
 
     // await addDocument(
     //   driveServer,
