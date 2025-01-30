@@ -3,6 +3,7 @@ import { actions as atlasScopeActions } from "../../document-models/atlas-scope"
 import { actions as atlasFoundationActions } from "../../document-models/atlas-foundation";
 import { addFolder, addDocument } from "./drive-actions";
 import notionSections from "../atlas-scope/data/notion-pages/section.json";
+import viewNodeTree from "../atlas-scope/data/view-node-tree.json";
 
 export const populateScope = (
   driveServer: IBaseDocumentDriveServer,
@@ -72,23 +73,27 @@ export const populateSection = (
   section: any,
   article: any
 ) => {
-  return driveServer.addAction(
-    driveId,
-    documentId,
-    atlasFoundationActions.populateFoundation({
-      name: section.properties["Name"].formula.string,
-      docNo: section.properties["Doc No (or Temp Name)"].title[0].plain_text,
-      parent: article.id,
-      atlasType: "SECTION",
-      content: section.properties["Content"].rich_text[0].plain_text,
-      masterStatus: "PLACEHOLDER",
-      globalTags: ["CAIS"],
-      references: [],
-      originalContextData: [],
-      provenance: section.url,
-      notionId: section.id,
-    })
-  );
+  try {
+    return driveServer.addAction(
+      driveId,
+      documentId,
+      atlasFoundationActions.populateFoundation({
+        name: section.properties["Name"].formula.string,
+        docNo: section.properties["Doc No (or Temp Name)"].title[0].plain_text,
+        parent: article.id,
+        atlasType: "SECTION",
+        content: section.properties["Content"].rich_text?.[0]?.plain_text || '',
+        masterStatus: "PLACEHOLDER",
+        globalTags: ["CAIS"],
+        references: [],
+        originalContextData: [],
+        provenance: section.url,
+        notionId: section.id,
+      })
+    );
+  } catch (error) {
+    console.error("Error populating section:", section.id, section.properties["Name"].formula.string, error);
+  }
 };
 
 
@@ -130,12 +135,14 @@ export const addArticles = async (
       scope
     );
 
+
+    const subDocuments = getSubDocuments(article.id);
     // add sections to article
     await addSections(
       driveServer,
       driveId,
       article.id + "-folder",
-      article.properties["Sections & Primary Docs"].relation,
+      subDocuments,
       notionSections,
       article
     );
@@ -146,69 +153,59 @@ export const addSections = async (
   driveServer: IBaseDocumentDriveServer,
   driveId: string,
   parentFolderId: string,
-  sectionsIds: any[],
+  sectionIds: any[],
   notionSections: any,
   article: any
 ) => {
-  for (const sectionObj of sectionsIds) {
-    const section = notionSections.find((s: any) => s.id === sectionObj.id);
+
+  for (const sectionId of sectionIds) {
+    const section = notionSections.find((s: any) => s.id === sectionId);
     if (!section) {
       continue;
     }
 
-    const sectionName = section.properties["Doc No (or Temp Name)"].title[0].plain_text;
-    if (sectionName === 'A.0.1 - A1 - Atlas Preamble - Definitions' || sectionName === 'A.0.1 - A2 - Atlas Preamble - General Provisions') {
-      console.log(sectionName)
-      await addFolder(
-        driveServer,
-        driveId,
-        section.id + "-folder",
-        section.properties["Doc No (or Temp Name)"].title[0].plain_text,
-        parentFolderId
-      );
 
-      await addDocument(
-        driveServer,
-        driveId,
-        section.id + "-document",
-        section.properties["Doc No (or Temp Name)"].title[0].plain_text,
-        "sky/atlas-foundation",
-        section.id + "-folder"
-      );
+    await addFolder(
+      driveServer,
+      driveId,
+      section.id + "-folder",
+      section.properties["Doc No (or Temp Name)"].title[0].plain_text,
+      parentFolderId
+    );
 
-      await populateSection(
-        driveServer,
-        driveId,
-        section.id + "-document",
-        section,
-        article
-      );
-    }
-    // const sectionNameParts = sectionName.split('.');
-    // const hasThreeNumbers = sectionNameParts.length === 4 && sectionNameParts.every((part: string, index: number) => index === 0 || !isNaN(Number(part)));
+    await addDocument(
+      driveServer,
+      driveId,
+      section.id + "-document",
+      section.properties["Doc No (or Temp Name)"].title[0].plain_text,
+      "sky/atlas-foundation",
+      section.id + "-folder"
+    );
 
-    // if (!hasThreeNumbers) {
-    //   continue;
-    // }
+    await populateSection(
+      driveServer,
+      driveId,
+      section.id + "-document",
+      section,
+      article
+    );
 
-
-
-    // await addDocument(
-    //   driveServer,
-    //   driveId,
-    //   section.id + "-document",
-    //   section.properties["Doc No (or Temp Name)"].title[0].plain_text,
-    //   "sky/atlas-foundation",
-    //   section.id + "-folder"
-    // );
-
-    // await populateSection(
-    //   driveServer,
-    //   driveId,
-    //   section.id + "-document",
-    //   section,
-    //   article
-    // );
+    await sleep(500);
   }
 };
 
+const getSubDocuments = (id: string) => {
+  const sd = Object.values(viewNodeTree).find((node) => node.id === id);
+  const subDocuments = sd.subDocuments.map((sd) => sd.id);
+  // const subDocuments = sd.subDocuments.map((sd) => ({
+  //   id: sd.id,
+  //   title: sd.title.title,
+  //   formalId: sd.title.formalId.prefix + sd.title.formalId.numberPath.join("."),
+  // }));
+
+  // console.log('subDocuments', subDocuments);
+
+  return subDocuments;
+}
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
