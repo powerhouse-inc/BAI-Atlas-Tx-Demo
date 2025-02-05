@@ -94,7 +94,7 @@ export default function Editor(props: IProps) {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1 style={{ fontSize: "24px", marginBottom: "20px" }}>
+      <h1 style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "20px" }}>
         Request Finance
       </h1>
       <div style={{ marginBottom: "10px" }}>
@@ -147,7 +147,7 @@ export default function Editor(props: IProps) {
         Submit
       </Button>
 
-      <h2 style={{ fontSize: "20px", marginBottom: "10px" }}>Gnosis Safe</h2>
+      <h2 style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "10px" }}>Gnosis Safe</h2>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
