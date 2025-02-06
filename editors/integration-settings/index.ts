@@ -3,7 +3,7 @@ import Editor from "./editor";
 
 export const module: ExtendedEditor<unknown, Action, unknown, unknown> = {
   Component: Editor,
-  documentTypes: ["*"],
+  documentTypes: ["powerhouse/integration-settings"],
   config: {
     id: "editor-id",
     disableExternalControls: true,
