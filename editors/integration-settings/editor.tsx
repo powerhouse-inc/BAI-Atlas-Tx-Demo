@@ -162,7 +162,7 @@ export default function Editor(props: IProps) {
           </tr>
         </thead>
         <tbody>
-          {state.gnosisSafe.wallets.map((wallet, index) => (
+          {state.gnosisSafe?.wallets.map((wallet, index) => (
             <tr key={index}>
               <td style={{ border: "1px solid #ccc", padding: "8px" }}>
                 <input
