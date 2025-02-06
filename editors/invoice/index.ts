@@ -1,13 +1,14 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { ExtendedEditor, EditorContextProps } from "document-model-libs";
 import Editor from "./editor";
 
-export const module = {
+export const module: ExtendedEditor<unknown, Action, unknown, unknown> = {
   Component: Editor,
   documentTypes: ["Invoice"],
   config: {
-    id: "invoice-editor",
-    disableExternalControls: false,
+    id: "editor-id",
+    disableExternalControls: true,
+    documentToolbarEnabled: true,
+    showSwitchboardLink: true,
   },
 };
 

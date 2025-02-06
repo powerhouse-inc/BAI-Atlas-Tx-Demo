@@ -1,7 +1,6 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/jsx-no-bind */
+import { Action, EditorProps } from "document-model/document";
+import { utils as documentModelUtils } from "document-model/document";
 import { useMemo } from "react";
-import { EditorProps } from "document-model/document";
 import {
   InvoiceState,
   InvoiceAction,
@@ -17,7 +16,6 @@ import {
   EditInvoiceInput,
   EditIssuerWalletInput,
 } from "../../document-models/invoice";
-
 import { DateTimeLocalInput } from "./dateTimeLocalInput";
 import { LegalEntityForm } from "./legalEntity";
 import { LineItemsTable } from "./lineItems";
@@ -26,9 +24,12 @@ import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
 
-export default function Editor(
-  props: EditorProps<InvoiceState, InvoiceAction, InvoiceLocalState>,
-) {
+export type IProps = EditorProps<unknown, Action>;
+
+export default function Editor(props: IProps) {
+  // generate a random id
+  // const id = documentModelUtils.hashKey();
+
   const { document, dispatch } = props;
   const state = document.state.global;
 
