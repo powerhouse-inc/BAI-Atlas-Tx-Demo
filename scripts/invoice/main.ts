@@ -4,8 +4,6 @@ import { actions as invoiceActions } from "../../document-models/invoice";
 
 
 export const updateInvoiceStatus = async (invoiceNumber: string): Promise<void> => {
-    console.log('Invoice number from editor document', invoiceNumber);
-
     const driveServer = (await createReactorAndCreateLocalDrive(
         "http://localhost:4001/d/powerhouse"
     )) as IBaseDocumentDriveServer;
@@ -32,7 +30,7 @@ export const updateInvoiceStatus = async (invoiceNumber: string): Promise<void> 
             const invoiceDocument = await driveServer.getDocument(driveId, document.id);
             const invoiceNo = (invoiceDocument.state.global as any).invoiceNo;
             if (invoiceNo === invoiceNumber) {
-                console.log(`Changing status of Invoice No: ${invoiceNo} to PAID`);
+                console.log(`Changing status of Invoice No: ${invoiceNo} ${invoiceDocument.state.global.status} to PAID`);
                 const documentStatus = await setInvoiceStatus(driveServer, driveId, document.id);
                 console.log('Changed Status:', documentStatus.document.state.global.status);
                 return Promise.resolve();

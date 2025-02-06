@@ -50,7 +50,6 @@ router.post('/create-invoice', async (req, res) => {
 });
 
 router.post('/update-invoice-status', async (req, res) => {
-    console.log('Getting a request to update the invoice status');
     try {
         const { invoiceNo } = req.body;
         await updateInvoiceStatus(invoiceNo);
@@ -59,8 +58,6 @@ router.post('/update-invoice-status', async (req, res) => {
         console.error('Error updating invoice status:', error);
         res.status(500).json({ error: 'Failed to update invoice status' });
     }
-
-
 });
 
 
