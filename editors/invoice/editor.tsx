@@ -24,13 +24,13 @@ import { LineItemsTable } from "./lineItems";
 import { loadUBLFile } from "./ingestUBL";
 import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
+import axios from "axios";
 
 export default function Editor(
   props: EditorProps<InvoiceState, InvoiceAction, InvoiceLocalState>,
 ) {
   const { document, dispatch } = props;
   const state = document.state.global;
-  console.log("State: ", state);
 
   const itemsTotalTaxExcl = useMemo(() => {
     return state.lineItems.reduce((total, lineItem) => {
@@ -166,6 +166,20 @@ export default function Editor(
   const handleReset = () => {
     dispatch(actions.editStatus({ status: "DRAFT" }));
   };
+
+  const handleUpdateInvoiceStatus = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/update-invoice-status",
+        {
+        invoiceNo: state.invoiceNo,
+      },
+    );
+    console.log("Response: ", response.data.message);
+    } catch (error) {
+      console.error("Error updating invoice status:", error);
+    }
+  }
 
   return (
     <div className="p-6">
@@ -324,6 +338,9 @@ export default function Editor(
           {JSON.stringify(state, null, 2)}
         </pre>
       </div> */}
+       <button onClick={handleUpdateInvoiceStatus} style={{ marginTop: "10px" }}>
+        Update Invoice Status
+      </button>
     </div>
   );
 }

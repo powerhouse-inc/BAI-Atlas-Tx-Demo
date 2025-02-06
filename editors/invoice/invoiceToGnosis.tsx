@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 interface InvoiceToGnosisProps {
   docState: any; // Replace 'any' with the appropriate type if available
@@ -8,7 +9,9 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [responseData, setResponseData] = useState<any>(null);
+  const [invoiceStatusResponse, setInvoiceStatusResponse] = useState<any>(null);
   const [transactionLink, setTransactionLink] = useState<string | null>(null);
+
 
   const TOKEN_ADDRESSES = {
     BASE: {
@@ -83,11 +86,27 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
       setResponseData(data);
         setTransactionLink(data.txHash.safeTxHash)
       setIsLoading(false);
+      await handleUpdateInvoiceStatus();
     } catch (error) {
       console.error("Error during transfer:", error);
       setIsLoading(false);
     }
   };
+
+  const handleUpdateInvoiceStatus = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/update-invoice-status",
+        {
+        invoiceNo: docState.invoiceNo,
+      },
+    );
+    console.log("Response: ", response.data.message);
+    setInvoiceStatusResponse(response.data.message);
+    } catch (error) {
+      console.error("Error updating invoice status:", error);
+    }
+  }
 
   return (
     <div>
@@ -115,8 +134,14 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
           </a>
         </div>
       )}
+      {invoiceStatusResponse && (
+        <div className="invoice-status-response">
+          <p>Invoice Status Response: {invoiceStatusResponse}</p>
+        </div>
+      )}
     </div>
   );
 };
+
 
 export default InvoiceToGnosis;
