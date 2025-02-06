@@ -1,6 +1,7 @@
 import { createSafeClient } from '@safe-global/sdk-starter-kit'
 import dotenv from 'dotenv'
 import { ethers } from 'ethers'
+import { updateInvoiceStatus } from '../../scripts/invoice/main';
 
 console.log('Starting Gnosis Safe transfer...')
 
@@ -18,6 +19,8 @@ interface Transaction {
     ethereumTxHash?: string;
 }
 
+let safeClient: createSafeClient;
+
 async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
     // Check if paymentDetails is a single object and convert it to an array
     if (!Array.isArray(paymentDetails)) {
@@ -31,7 +34,7 @@ async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
     console.log(`Safe Address: ${payerWallet.address}`)
 
     try {
-        const safeClient = await createSafeClient({
+        safeClient = await createSafeClient({
             provider: payerWallet.rpc,
             signer: SIGNER_PRIVATE_KEY,
             safeAddress: payerWallet.address
@@ -122,3 +125,42 @@ async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
 export { executeTokenTransfer }
 
 
+export async function checkTransactionExecuted(generatedsafeTxHash: string, invoiceNo: string) {
+    return new Promise<void>((resolve, reject) => {
+        const interval = 5000; // 5 seconds
+        const maxAttempts = 60; // Maximum number of attempts (e.g., 5 minutes)
+        let attempts = 0;
+
+        const intervalId = setInterval(async () => {
+            try {
+                // Fetch the transaction details using the safeTxHash
+                const transactionDetails = await safeClient.getPendingTransactions();
+                const { safeTxHash, transactionHash, isExecuted, isSuccessful } = transactionDetails.results.find((tx: any) => tx.safeTxHash === generatedsafeTxHash);
+                const transaction = { safeTxHash, transactionHash, isExecuted, isSuccessful }
+                console.log('Transaction:', transaction);
+
+
+                // Check if the transaction has been executed
+                if (transaction.isExecuted && transaction.isSuccessful) {
+                    console.log('Transaction has been executed successfully.');
+                    await updateInvoiceStatus(invoiceNo)
+                    clearInterval(intervalId);
+                    resolve();
+                } else {
+                    console.log('Transaction has not been executed yet.');
+                }
+
+                attempts++;
+                if (attempts >= maxAttempts) {
+                    console.log('Max attempts reached, stopping checks.');
+                    clearInterval(intervalId);
+                    reject(new Error('Transaction execution check timed out.'));
+                }
+            } catch (error) {
+                console.error('Error fetching transaction details:', error);
+                clearInterval(intervalId);
+                reject(error);
+            }
+        }, interval);
+    });
+}

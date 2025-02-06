@@ -77,7 +77,8 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
         },
         body: JSON.stringify({
           payerWallet,
-          paymentDetails
+          paymentDetails,
+          invoiceNo: docState.invoiceNo,
         }),
       });
 
@@ -86,7 +87,6 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
       setResponseData(data);
         setTransactionLink(data.txHash.safeTxHash)
       setIsLoading(false);
-      await handleUpdateInvoiceStatus();
     } catch (error) {
       console.error("Error during transfer:", error);
       setIsLoading(false);

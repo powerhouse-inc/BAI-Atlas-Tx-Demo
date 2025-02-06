@@ -1,6 +1,6 @@
 import express from 'express';
 import axios from 'axios';
-import { executeTokenTransfer } from './gnosisTransactionBuilder'
+import { executeTokenTransfer, checkTransactionExecuted } from './gnosisTransactionBuilder'
 import { updateInvoiceStatus } from '../../scripts/invoice/main';
 
 const router = express.Router();
@@ -64,9 +64,10 @@ router.post('/update-invoice-status', async (req, res) => {
 
 router.post('/transfer', async (req, res) => {
     try {
-        const { payerWallet, paymentDetails } = req.body;
+        const { payerWallet, paymentDetails, invoiceNo } = req.body;
         const result = await executeTokenTransfer(payerWallet, paymentDetails);
         res.json(result);
+        await checkTransactionExecuted(result.txHash.safeTxHash, invoiceNo);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
