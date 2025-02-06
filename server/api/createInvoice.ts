@@ -1,6 +1,7 @@
 import express from 'express';
 import axios from 'axios';
 import { executeTokenTransfer } from './gnosisTransactionBuilder'
+import { updateInvoiceStatus } from '../../scripts/invoice/main';
 
 const router = express.Router();
 
@@ -47,6 +48,22 @@ router.post('/create-invoice', async (req, res) => {
         res.status(500).json({ error: 'Failed to create invoice', errors: error.response.data.errors });
     }
 });
+
+router.post('/update-invoice-status', async (req, res) => {
+    console.log('Getting a request to update the invoice status');
+    try {
+        const { invoiceNo } = req.body;
+        await updateInvoiceStatus(invoiceNo);
+        res.json({ message: 'Invoice status updated successfully' });
+    } catch (error) {
+        console.error('Error updating invoice status:', error);
+        res.status(500).json({ error: 'Failed to update invoice status' });
+    }
+
+
+});
+
+
 
 router.post('/transfer', async (req, res) => {
     try {
