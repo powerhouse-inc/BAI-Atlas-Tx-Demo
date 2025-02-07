@@ -135,19 +135,19 @@ export async function checkTransactionExecuted(generatedsafeTxHash: string, invo
             try {
                 // Fetch the transaction details using the safeTxHash
                 const transactionDetails = await safeClient.getPendingTransactions();
-                const { safeTxHash, transactionHash, isExecuted, isSuccessful } = transactionDetails.results.find((tx: any) => tx.safeTxHash === generatedsafeTxHash);
-                const transaction = { safeTxHash, transactionHash, isExecuted, isSuccessful }
-                console.log('Transaction:', transaction);
+                const foundTransaction = transactionDetails.results.find((tx: any) => tx.safeTxHash === generatedsafeTxHash);
 
-
-                // Check if the transaction has been executed
-                if (transaction.isExecuted && transaction.isSuccessful) {
+                if (!foundTransaction) {
                     console.log('Transaction has been executed successfully.');
                     await updateInvoiceStatus(invoiceNo)
                     clearInterval(intervalId);
                     resolve();
-                } else {
+                }
+                else {
                     console.log('Transaction has not been executed yet.');
+                    const { safeTxHash, isExecuted } = foundTransaction;
+                    const transaction = { safeTxHash, isExecuted, }
+                    console.log('Transaction:', transaction);
                 }
 
                 attempts++;
