@@ -23,6 +23,7 @@ import { loadUBLFile } from "./ingestUBL";
 import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
+import { toast } from "@powerhousedao/design-system";
 
 export type IProps = EditorProps<unknown, Action>;
 
@@ -61,7 +62,7 @@ export default function Editor(props: IProps) {
     dispatch(
       actions.editInvoice({
         dateIssued: e.target.value,
-      }),
+      })
     );
   }
 
@@ -69,7 +70,7 @@ export default function Editor(props: IProps) {
     dispatch(
       actions.editInvoice({
         dateDelivered: e.target.value,
-      }),
+      })
     );
   }
 
@@ -77,7 +78,7 @@ export default function Editor(props: IProps) {
     dispatch(
       actions.editInvoice({
         dateDue: e.target.value,
-      }),
+      })
     );
   }
 
@@ -85,7 +86,7 @@ export default function Editor(props: IProps) {
     dispatch(
       actions.editInvoice({
         invoiceNo: e.target.value,
-      }),
+      })
     );
   }
 
@@ -151,7 +152,7 @@ export default function Editor(props: IProps) {
   ];
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -173,14 +174,17 @@ export default function Editor(props: IProps) {
       const response = await axios.post(
         "http://localhost:5000/api/update-invoice-status",
         {
-        invoiceNo: state.invoiceNo,
-      },
-    );
-    console.log("Response: ", response.data.message);
+          invoiceNo: state.invoiceNo,
+        }
+      );
+      toast(response.data.message, {
+        type: "success",
+      });
+      console.log("Response: ", response.data.message);
     } catch (error) {
       console.error("Error updating invoice status:", error);
     }
-  }
+  };
 
   return (
     <div className="p-6">
@@ -339,7 +343,7 @@ export default function Editor(props: IProps) {
           {JSON.stringify(state, null, 2)}
         </pre>
       </div> */}
-       <button onClick={handleUpdateInvoiceStatus} style={{ marginTop: "10px" }}>
+      <button onClick={handleUpdateInvoiceStatus} style={{ marginTop: "10px" }}>
         Update Invoice Status
       </button>
     </div>

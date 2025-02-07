@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { toast } from "@powerhousedao/design-system";
 
 interface InvoiceToGnosisProps {
   docState: any; // Replace 'any' with the appropriate type if available
@@ -11,7 +12,6 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
   const [responseData, setResponseData] = useState<any>(null);
   const [invoiceStatusResponse, setInvoiceStatusResponse] = useState<any>(null);
   const [transactionLink, setTransactionLink] = useState<string | null>(null);
-
 
   const TOKEN_ADDRESSES = {
     BASE: {
@@ -85,7 +85,7 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
       const data = await response.json();
       console.log("Transfer result:", data);
       setResponseData(data);
-        setTransactionLink(data.txHash.safeTxHash)
+      setTransactionLink(data.txHash.safeTxHash);
       setIsLoading(false);
     } catch (error) {
       console.error("Error during transfer:", error);
@@ -98,15 +98,15 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
       const response = await axios.post(
         "http://localhost:5000/api/update-invoice-status",
         {
-        invoiceNo: docState.invoiceNo,
-      },
-    );
-    console.log("Response: ", response.data.message);
-    setInvoiceStatusResponse(response.data.message);
+          invoiceNo: docState.invoiceNo,
+        }
+      );
+      console.log("Response: ", response.data.message);
+      setInvoiceStatusResponse(response.data.message);
     } catch (error) {
       console.error("Error updating invoice status:", error);
     }
-  }
+  };
 
   return (
     <div>
@@ -125,7 +125,9 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
           <p>Safe Transaction Hash: {transactionLink}</p>
           <a
             style={{ color: "blue" }}
-            href={'https://app.safe.global/transactions/queue?safe=base:0x1FB6bEF04230d67aF0e3455B997a28AFcCe1F45e'}
+            href={
+              "https://app.safe.global/transactions/queue?safe=base:0x1FB6bEF04230d67aF0e3455B997a28AFcCe1F45e"
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="view-invoice-button"
@@ -142,6 +144,5 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
     </div>
   );
 };
-
 
 export default InvoiceToGnosis;
