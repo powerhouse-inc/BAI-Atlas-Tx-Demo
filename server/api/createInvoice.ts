@@ -73,4 +73,48 @@ router.post('/transfer', async (req, res) => {
     }
 });
 
+// server/api/createInvoice.ts
+router.get('/transaction-status/:safeTxHash/:invoiceNo', (req, res) => {
+    const { safeTxHash, invoiceNo } = req.params;
+
+    // Set headers for SSE
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Send initial connection message
+    res.write(`data: ${JSON.stringify({ status: 'connecting' })}\n\n`);
+
+    // Start monitoring the transaction
+    const interval = 5000; // 5 seconds
+    const maxAttempts = 60; // Maximum number of attempts (e.g., 5 minutes)
+    let attempts = 0;
+    const intervalId = setInterval(async () => {
+        try {
+            // Fetch the transaction details using the safeTxHash
+            const result = await checkTransactionExecuted(safeTxHash, invoiceNo);
+            if (result) {
+                res.write(`data: ${JSON.stringify({ status: 'completed', safeTxHash, invoiceNo })}\n\n`);
+                clearInterval(intervalId);
+                res.end();
+            }
+            attempts++;
+            if (attempts >= maxAttempts) {
+                console.log('Max attempts reached, stopping checks.');
+                clearInterval(intervalId);
+                res.end();
+            }
+        } catch (error) {
+            console.error('Error fetching transaction details:', error);
+            clearInterval(intervalId);
+            res.end();
+        }
+    }, interval);
+
+    // Clean up if client disconnects
+    req.on('close', () => {
+        clearInterval(intervalId);
+    });
+});
+
 export default router; 

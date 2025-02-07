@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "@powerhousedao/design-system";
 
@@ -11,7 +11,31 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
   const [error, setError] = useState<string | null>(null);
   const [responseData, setResponseData] = useState<any>(null);
   const [invoiceStatusResponse, setInvoiceStatusResponse] = useState<any>(null);
-  const [transactionLink, setTransactionLink] = useState<string | null>(null);
+  const [safeTxHash, setsafeTxHash] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (safeTxHash) {
+      // Set up SSE or WebSocket connection using transactionLink
+      const eventSource = new EventSource(
+        `http://localhost:5000/api/transaction-status/${safeTxHash}/${docState.invoiceNo}`
+      );
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("SSE data: ", data);
+        if (data.status === "completed") {
+          // Handle transaction completion
+          console.log("Transaction completed and status updated");
+          toast("Invoice Paid", {
+            type: "success",
+          });
+        }
+      };
+
+      return () => {
+        eventSource.close();
+      };
+    }
+  }, [safeTxHash]);
 
   const TOKEN_ADDRESSES = {
     BASE: {

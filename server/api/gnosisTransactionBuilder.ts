@@ -125,42 +125,28 @@ async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
 export { executeTokenTransfer }
 
 
-export async function checkTransactionExecuted(generatedsafeTxHash: string, invoiceNo: string) {
-    return new Promise<void>((resolve, reject) => {
-        const interval = 5000; // 5 seconds
-        const maxAttempts = 60; // Maximum number of attempts (e.g., 5 minutes)
-        let attempts = 0;
+export async function checkTransactionExecuted(generatedsafeTxHash: string, invoiceNo: string): Promise<boolean> {
+    return new Promise<boolean>(async (resolve, reject) => {
+        try {
+            // Fetch the transaction details using the safeTxHash
+            const transactionDetails = await safeClient.getPendingTransactions();
+            const foundTransaction = transactionDetails.results.find((tx: any) => tx.safeTxHash === generatedsafeTxHash);
 
-        const intervalId = setInterval(async () => {
-            try {
-                // Fetch the transaction details using the safeTxHash
-                const transactionDetails = await safeClient.getPendingTransactions();
-                const foundTransaction = transactionDetails.results.find((tx: any) => tx.safeTxHash === generatedsafeTxHash);
-
-                if (!foundTransaction) {
-                    console.log('Transaction has been executed successfully.');
-                    await updateInvoiceStatus(invoiceNo)
-                    clearInterval(intervalId);
-                    resolve();
-                }
-                else {
-                    console.log('Transaction has not been executed yet.');
-                    const { safeTxHash, isExecuted } = foundTransaction;
-                    const transaction = { safeTxHash, isExecuted, }
-                    console.log('Transaction:', transaction);
-                }
-
-                attempts++;
-                if (attempts >= maxAttempts) {
-                    console.log('Max attempts reached, stopping checks.');
-                    clearInterval(intervalId);
-                    reject(new Error('Transaction execution check timed out.'));
-                }
-            } catch (error) {
-                console.error('Error fetching transaction details:', error);
-                clearInterval(intervalId);
-                reject(error);
+            if (!foundTransaction) {
+                console.log('Transaction has been executed successfully.');
+                await updateInvoiceStatus(invoiceNo)
+                resolve(true);
             }
-        }, interval);
+            else {
+                console.log('Transaction has not been executed yet.');
+                const { safeTxHash, isExecuted } = foundTransaction;
+                const transaction = { safeTxHash, isExecuted, }
+                console.log('Transaction:', transaction);
+            }
+
+        } catch (error) {
+            console.error('Error fetching transaction details:', error);
+            reject(error);
+        }
     });
 }
