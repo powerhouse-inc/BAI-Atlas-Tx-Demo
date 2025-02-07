@@ -43,7 +43,7 @@ router.post('/create-invoice', async (req, res) => {
             console.error('Server: Error making invoice on-chain:', error);
         }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating invoice: error.response', error.response.data);
         res.status(500).json({ error: 'Failed to create invoice', errors: error.response.data.errors });
     }
@@ -68,7 +68,7 @@ router.post('/transfer', async (req, res) => {
         const result = await executeTokenTransfer(payerWallet, paymentDetails);
         res.json(result);
         await checkTransactionExecuted(result.txHash.safeTxHash, invoiceNo);
-    } catch (error) {
+    } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
 });
@@ -91,12 +91,12 @@ router.get('/transaction-status/:safeTxHash/:invoiceNo', (req, res) => {
     let attempts = 0;
     const intervalId = setInterval(async () => {
         try {
-            // Fetch the transaction details using the safeTxHash
             const result = await checkTransactionExecuted(safeTxHash, invoiceNo);
             if (result) {
                 res.write(`data: ${JSON.stringify({ status: 'completed', safeTxHash, invoiceNo })}\n\n`);
                 clearInterval(intervalId);
                 res.end();
+                return;
             }
             attempts++;
             if (attempts >= maxAttempts) {
@@ -114,6 +114,7 @@ router.get('/transaction-status/:safeTxHash/:invoiceNo', (req, res) => {
     // Clean up if client disconnects
     req.on('close', () => {
         clearInterval(intervalId);
+        res.end();
     });
 });
 

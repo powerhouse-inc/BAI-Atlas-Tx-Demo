@@ -15,20 +15,24 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
 
   useEffect(() => {
     if (safeTxHash) {
-      // Set up SSE or WebSocket connection using transactionLink
       const eventSource = new EventSource(
         `http://localhost:5000/api/transaction-status/${safeTxHash}/${docState.invoiceNo}`
       );
+
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
         console.log("SSE data: ", data);
         if (data.status === "completed") {
-          // Handle transaction completion
           console.log("Transaction completed and status updated");
           toast("Invoice Paid", {
             type: "success",
           });
+          eventSource.close(); // Close the connection immediately
         }
+      };
+
+      eventSource.onerror = () => {
+        eventSource.close();
       };
 
       return () => {
@@ -91,7 +95,6 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
   const handleInvoiceToGnosis = async () => {
     setIsLoading(true);
     setError(null);
-    setTransactionLink(null);
 
     try {
       const response = await fetch("http://localhost:5000/api/transfer", {
@@ -109,7 +112,7 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
       const data = await response.json();
       console.log("Transfer result:", data);
       setResponseData(data);
-      setTransactionLink(data.txHash.safeTxHash);
+      setsafeTxHash(data.txHash.safeTxHash);
       setIsLoading(false);
     } catch (error) {
       console.error("Error during transfer:", error);
@@ -144,9 +147,9 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
 
       {error && <div className="error-message">{error}</div>}
 
-      {transactionLink && (
+      {safeTxHash && (
         <div className="invoice-link">
-          <p>Safe Transaction Hash: {transactionLink}</p>
+          <p>Safe Transaction Hash: {safeTxHash}</p>
           <a
             style={{ color: "blue" }}
             href={

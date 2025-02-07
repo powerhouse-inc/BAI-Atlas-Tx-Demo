@@ -343,9 +343,9 @@ export default function Editor(props: IProps) {
           {JSON.stringify(state, null, 2)}
         </pre>
       </div> */}
-      <button onClick={handleUpdateInvoiceStatus} style={{ marginTop: "10px" }}>
+      {/* <button onClick={handleUpdateInvoiceStatus} style={{ marginTop: "10px" }}>
         Update Invoice Status
-      </button>
+      </button> */}
     </div>
   );
 }

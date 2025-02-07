@@ -19,7 +19,7 @@ interface Transaction {
     ethereumTxHash?: string;
 }
 
-let safeClient: createSafeClient;
+let safeClient: any;
 
 async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
     // Check if paymentDetails is a single object and convert it to an array
@@ -126,27 +126,28 @@ export { executeTokenTransfer }
 
 
 export async function checkTransactionExecuted(generatedsafeTxHash: string, invoiceNo: string): Promise<boolean> {
-    return new Promise<boolean>(async (resolve, reject) => {
-        try {
-            // Fetch the transaction details using the safeTxHash
-            const transactionDetails = await safeClient.getPendingTransactions();
-            const foundTransaction = transactionDetails.results.find((tx: any) => tx.safeTxHash === generatedsafeTxHash);
+    try {
+        // Fetch the transaction details using the safeTxHash
+        const transactionDetails = await safeClient.getPendingTransactions();
+        const foundTransaction = transactionDetails.results.find((tx: any) => tx.safeTxHash === generatedsafeTxHash);
 
-            if (!foundTransaction) {
-                console.log('Transaction has been executed successfully.');
-                await updateInvoiceStatus(invoiceNo)
-                resolve(true);
+        if (!foundTransaction) {
+            console.log('Transaction has been executed successfully.');
+            await updateInvoiceStatus(invoiceNo);
+            return true; // Transaction is executed
+        } else {
+            console.log('Transaction has not been executed yet.');
+            const { isExecuted } = foundTransaction;
+            // If the transaction is found and already executed
+            if (isExecuted) {
+                console.log('Transaction is already executed.');
+                await updateInvoiceStatus(invoiceNo);
+                return true;
             }
-            else {
-                console.log('Transaction has not been executed yet.');
-                const { safeTxHash, isExecuted } = foundTransaction;
-                const transaction = { safeTxHash, isExecuted, }
-                console.log('Transaction:', transaction);
-            }
-
-        } catch (error) {
-            console.error('Error fetching transaction details:', error);
-            reject(error);
+            return false; // Transaction is still pending
         }
-    });
+    } catch (error) {
+        console.error('Error fetching transaction details:', error);
+        throw error;
+    }
 }
