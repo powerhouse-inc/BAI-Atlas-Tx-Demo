@@ -37,7 +37,7 @@ router.post('/create-invoice', async (req, res) => {
             );
             console.log('Server: Invoice made on-chain successfully:', onChainResponse.data.invoiceLinks);
 
-            // Send the second API call's response back to the client
+            // Send only one response
             res.json(onChainResponse.data);
         } catch (error) {
             console.error('Server: Error making invoice on-chain:', error);

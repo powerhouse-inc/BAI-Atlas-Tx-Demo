@@ -17,16 +17,32 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
     setError(null);
     setInvoiceLink(null);
 
+    const bankDetails = {
+      currency: docState.currency || "EUR",
+      accountNumber: docState.issuer.paymentRouting.bank.accountNum || "DE89300500000132013000", // the IBAN
+      country: docState.issuer.paymentRouting.bank.address.country.toUpperCase() || "DE",
+      bankName: docState.issuer.paymentRouting.bank.name || "GmbH Bank Name",
+      firstName: docState.issuer.paymentRouting.bank.beneficiary || "Liberuum",
+      lastName: "Liberty",
+      bicSwift: docState.issuer.paymentRouting.bank.BIC || "GMBHDEFFXXX",
+    };
+
     try {
       const response = await axios.post(
         "http://localhost:5000/api/create-invoice",
         {
-          creationDate: `${docState.dateIssued}T09:38:16.916Z` || "2025-01-27T14:38:16.916Z",
+          meta: {
+            format: "rnf_generic",
+            version: "0.0.3",
+          },
+          creationDate:
+            `${docState.dateIssued}T09:38:16.916Z` ||
+            "2025-01-27T14:38:16.916Z",
           invoiceItems: docState.lineItems.map((item: any) => ({
             currency: item.currency,
             name: item.description,
             quantity: item.quantity,
-            unitPrice: item.totalPriceTaxIncl *100,
+            unitPrice: item.totalPriceTaxIncl * 100,
           })) || [
             {
               currency: "EUR",
@@ -36,29 +52,41 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
             },
           ],
           invoiceNumber: docState.invoiceNo || "2.07",
-          buyerInfo:  {
-            businessName: "Liberuum",
+          buyerInfo: {
             email: "liberuum@powerhouse.inc",
+            firstName: "Liberuum",
+            lastName: "Liberty",
+          },
+          sellerInfo: {
+            email: "contributor@contributor.com",
+            firstName: "open source",
+            lastName: "contributor",
           },
           paymentOptions: [
             {
-              type: "wallet",
+              type: "bank-account",
               value: {
-                currencies: ["EURe"],
+                currency: "EUR",
                 paymentInformation: {
-                  paymentAddress: docState.issuer.paymentRouting.wallet.address || "0x4714C7EfE5D0213615FC6CBB8717B524eC433e9a",
-                  chain: "xdai",
+                  bankAccountDetails: {
+                    accountNumber: bankDetails.accountNumber, // the IBAN
+                    country: bankDetails.country,
+                    currency: bankDetails.currency,
+                    bankName: bankDetails.bankName,
+                    firstName: bankDetails.firstName,
+                    lastName: bankDetails.lastName,
+                    bicSwift: bankDetails.bicSwift,
+                  },
                 },
               },
             },
           ],
-          tags: ["created_in_connect"],
         }
       );
 
       console.log("Invoice created successfully:", response.data);
       setResponseData(response.data);
-
+      // setInvoiceLink("https://baguette-app.request.finance/direct-payment");
       if (response.data?.invoiceLinks?.pay) {
         setInvoiceLink(response.data.invoiceLinks.pay);
       }
