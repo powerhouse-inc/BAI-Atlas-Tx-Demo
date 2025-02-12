@@ -44,7 +44,7 @@ async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
 
         // Get the next nonce
         const nextNonce = await safeClient.getNonce();
-        console.log('Next nonce:', nextNonce);
+        console.log('Next nonce:', nextNonce + 1);
 
         const transactions: any[] = [];
         const amountsInSmallestUnit: any[] = []; // Store amounts for each payment
@@ -97,7 +97,7 @@ async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
         const txResult = await safeClient.send({
             transactions,
             params: {
-                nonce: nextNonce
+                nonce: nextNonce + 1
             }
         });
 
