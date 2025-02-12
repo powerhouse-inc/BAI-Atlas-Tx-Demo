@@ -38,9 +38,13 @@ async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
             provider: payerWallet.rpc,
             signer: SIGNER_PRIVATE_KEY,
             safeAddress: payerWallet.address
-        })
+        });
 
         const provider = new ethers.JsonRpcProvider(payerWallet.rpc);
+
+        // Get the next nonce
+        const nextNonce = await safeClient.getNonce();
+        console.log('Next nonce:', nextNonce);
 
         const transactions: any[] = [];
         const amountsInSmallestUnit: any[] = []; // Store amounts for each payment
@@ -89,14 +93,17 @@ async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
 
         console.log('\n=== Processing Transfer ===')
         console.log('Submitting transaction to Safe...')
-        const txResult = await safeClient.send({ transactions })
+        
+        const txResult = await safeClient.send({
+            transactions,
+            params: {
+                nonce: nextNonce
+            }
+        });
 
-        // Add logging for transaction result
         console.log('Transaction result:', txResult);
 
-        // Check if the transaction was successful
-        const transactionsArray: Transaction[] = txResult.transactions as Transaction[];
-        if (!transactionsArray || transactionsArray.length === 0) {
+        if (!txResult || !txResult.transactions) {
             throw new Error('Transaction submission failed, no transaction details returned.');
         }
 
@@ -108,7 +115,7 @@ async function executeTokenTransfer(payerWallet: any, paymentDetails: any) {
             safeAddress: payerWallet.address,
             paymentDetails: paymentDetails.map((payment: any, index: any) => ({
                 ...payment,
-                amount: ethers.formatUnits(amountsInSmallestUnit[index], decimalsList[index])  // Use the stored decimals
+                amount: ethers.formatUnits(amountsInSmallestUnit[index], decimalsList[index])
             }))
         }
 
