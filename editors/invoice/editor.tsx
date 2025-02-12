@@ -1,6 +1,6 @@
 import { Action, EditorProps } from "document-model/document";
 import { utils as documentModelUtils } from "document-model/document";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   InvoiceState,
   InvoiceAction,
@@ -25,14 +25,19 @@ import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
 import { toast } from "@powerhousedao/design-system";
 
-export type IProps = EditorProps<unknown, Action>;
+import Toggle from "react-toggle";
+import "./toggle.css";
 
-export default function Editor(props: IProps) {
+export default function Editor(
+  props: EditorProps<InvoiceState, InvoiceAction, InvoiceLocalState>,
+) {
   // generate a random id
   // const id = documentModelUtils.hashKey();
 
   const { document, dispatch } = props;
   const state = document.state.global;
+
+  const [fiatMode, setFiatMode] = useState(false);
 
   const itemsTotalTaxExcl = useMemo(() => {
     return state.lineItems.reduce((total, lineItem) => {
@@ -62,7 +67,7 @@ export default function Editor(props: IProps) {
     dispatch(
       actions.editInvoice({
         dateIssued: e.target.value,
-      })
+      }),
     );
   }
 
@@ -70,7 +75,7 @@ export default function Editor(props: IProps) {
     dispatch(
       actions.editInvoice({
         dateDelivered: e.target.value,
-      })
+      }),
     );
   }
 
@@ -78,7 +83,7 @@ export default function Editor(props: IProps) {
     dispatch(
       actions.editInvoice({
         dateDue: e.target.value,
-      })
+      }),
     );
   }
 
@@ -86,7 +91,7 @@ export default function Editor(props: IProps) {
     dispatch(
       actions.editInvoice({
         invoiceNo: e.target.value,
-      })
+      }),
     );
   }
 
@@ -152,7 +157,7 @@ export default function Editor(props: IProps) {
   ];
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -175,7 +180,7 @@ export default function Editor(props: IProps) {
         "http://localhost:5000/api/update-invoice-status",
         {
           invoiceNo: state.invoiceNo,
-        }
+        },
       );
       toast(response.data.message, {
         type: "success",
@@ -187,165 +192,196 @@ export default function Editor(props: IProps) {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Invoice</h1>
-          <div className="flex items-center">
-            <label className="mr-2">Invoice No:</label>
+    <div className="container mx-auto p-6 max-w-7xl">
+      {/* Header Section */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        {/* Left side with Invoice title, input, and upload */}
+        <div className="flex items-center gap-4 flex-nowrap">
+          <h1 className="text-3xl font-bold whitespace-nowrap">Invoice</h1>
+          <input
+            className="min-w-[12rem] max-w-xs rounded-lg border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500"
+            onChange={(e) =>
+              dispatch(actions.editInvoice({ invoiceNo: e.target.value }))
+            }
+            placeholder={new Date()
+              .toISOString()
+              .substring(0, 10)
+              .replaceAll("-", "")}
+            type="text"
+            value={state.invoiceNo || ""}
+          />
+          <label className="inline-flex cursor-pointer items-center rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 whitespace-nowrap">
+            Upload UBL
             <input
-              className="rounded-md border px-3 py-2"
-              onChange={handleUpdateInvoiceNo}
-              placeholder={new Date()
-                .toISOString()
-                .substring(0, 10)
-                .replaceAll("-", "")}
-              type="text"
-              value={state.invoiceNo || ""}
+              accept=".xml"
+              className="hidden"
+              onChange={(e) => handleFileUpload(e)}
+              type="file"
             />
-            <label className="mx-3 inline-flex cursor-pointer items-center rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-              Upload UBL
-              <input
-                accept=".xml"
-                className="hidden"
-                onChange={handleFileUpload}
-                type="file"
-              />
-            </label>
-          </div>
+          </label>
         </div>
-        <div className="flex items-center space-x-4">
-          <span className={getStatusStyle(state.status)}>{state.status}</span>
-          <select
-            className="rounded-md border bg-white px-3 py-2"
-            onChange={handleUpdateStatus}
-            value={state.status}
-          >
-            {STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="mb-8 flex justify-between">
-        <div className="space-y-2">
-          <h3 className="text-xl font-semibold">Issuer</h3>
 
-          <div className="flex gap-8">
-            <div className="flex flex-col">
-              <label className="mb-2">Issue Date:</label>
+        {/* Toggle between upload and status */}
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-sm font-medium ${!fiatMode ? "text-purple-600" : "text-gray-500"}`}
+          >
+            Crypto
+          </span>
+          <Toggle
+            checked={fiatMode}
+            onChange={() => setFiatMode(!fiatMode)}
+            icons={false}
+          />
+          <span
+            className={`text-sm font-medium ${fiatMode ? "text-green-600" : "text-gray-500"}`}
+          >
+            Fiat
+          </span>
+        </div>
+
+        {/* Status on the right */}
+        <select
+          className={getStatusStyle(state.status)}
+          onChange={(e) =>
+            dispatch(actions.editStatus({ status: e.target.value as Status }))
+          }
+          value={state.status}
+        >
+          {STATUS_OPTIONS.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-2 gap-8">
+        {/* Issuer Section */}
+        <div className="border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">Issuer</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 text-sm">Issue Date:</label>
               <DateTimeLocalInput
-                className="w-64"
+                className="w-full"
                 inputType="date"
-                onChange={handleUpdateDateIssued}
+                onChange={(e) =>
+                  dispatch(actions.editInvoice({ dateIssued: e.target.value }))
+                }
                 value={state.dateIssued}
               />
             </div>
-
-            <div className="flex flex-col">
-              <label className="mb-2">Delivery Date:</label>
+            <div>
+              <label className="block mb-1 text-sm">Delivery Date:</label>
               <DateTimeLocalInput
-                className="w-64"
+                className="w-full"
                 inputType="date"
-                onChange={handleUpdateDateDelivered}
+                onChange={(e) =>
+                  dispatch(
+                    actions.editInvoice({ dateDelivered: e.target.value }),
+                  )
+                }
                 value={state.dateDelivered || state.dateIssued}
               />
             </div>
           </div>
-
           <LegalEntityForm
             legalEntity={state.issuer}
-            onChangeBank={handleUpdateIssuerBank}
-            onChangeInfo={handleUpdateIssuerInfo}
-            onChangeWallet={handleUpdateIssuerWallet}
+            onChangeBank={(input) => dispatch(actions.editIssuerBank(input))}
+            onChangeInfo={(input) => dispatch(actions.editIssuer(input))}
+            onChangeWallet={(input) =>
+              dispatch(actions.editIssuerWallet(input))
+            }
+            bankDisabled={!fiatMode}
+            walletDisabled={fiatMode}
           />
         </div>
 
-        <div className="space-y-2">
-          <h3 className="text-xl font-semibold">Payer</h3>
-          <label className="mr-2">Due Date:</label>
-          <DateTimeLocalInput
-            className="ml-2 w-64"
-            inputType="date"
-            onChange={handleUpdateDateDue}
-            value={state.dateDue}
-          />
+        {/* Payer Section */}
+        <div className="border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">Payer</h3>
+          <div>
+            <label className="block mb-1 text-sm">Due Date:</label>
+            <DateTimeLocalInput
+              className="w-full"
+              inputType="date"
+              onChange={(e) =>
+                dispatch(actions.editInvoice({ dateDue: e.target.value }))
+              }
+              value={state.dateDue}
+            />
+          </div>
           <LegalEntityForm
             bankDisabled
             legalEntity={state.payer}
-            onChangeInfo={handleUpdatePayerInfo}
+            onChangeInfo={(input) => dispatch(actions.editPayer(input))}
           />
         </div>
       </div>
 
-      <LineItemsTable
-        currency={state.currency}
-        lineItems={state.lineItems}
-        onAddItem={handleAddItem}
-        onDeleteItem={handleDeleteItem}
-        onUpdateCurrency={handleUpdateCurrency}
-        onUpdateItem={handleUpdateItem}
-      />
+      {/* Line Items Table */}
+      <div className="mb-8">
+        <LineItemsTable
+          currency={state.currency}
+          lineItems={state.lineItems}
+          onAddItem={(item) => dispatch(actions.addLineItem(item))}
+          onDeleteItem={(input) => dispatch(actions.deleteLineItem(input))}
+          onUpdateCurrency={(input) => dispatch(actions.editInvoice(input))}
+          onUpdateItem={(item) => dispatch(actions.editLineItem(item))}
+        />
+      </div>
 
-      {/* Totals */}
-      <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <div className="space-y-2">
-          <div className="flex justify-between text-gray-600">
-            <span>Subtotal (excl. tax):</span>
-            <span className="font-medium">
-              {itemsTotalTaxExcl.toFixed(2)} {state.currency}
-            </span>
-          </div>
-          <div className="flex justify-between border-t border-gray-200 pt-2 text-lg font-bold text-gray-900">
-            <span>Total (incl. tax):</span>
-            <span>
-              {itemsTotalTaxIncl.toFixed(2)} {state.currency}
-            </span>
+      {/* Totals Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="md:col-start-2">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 shadow-sm">
+            <div className="space-y-4">
+              <div className="flex justify-between text-gray-700">
+                <span className="font-medium">Subtotal (excl. tax):</span>
+                <span>
+                  {itemsTotalTaxExcl.toFixed(2)} {state.currency}
+                </span>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-4 text-lg font-bold text-gray-900">
+                <span>Total (incl. tax):</span>
+                <span>
+                  {itemsTotalTaxIncl.toFixed(2)} {state.currency}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      {state.status === "ACCEPTED" ? (
-        state.currency === "USDS" ? (
-          state.issuer.paymentRouting?.wallet?.chainName === "base" ? (
-            <div>
-              <br />
+
+      {/* Finance Request Section */}
+      {state.status === "ACCEPTED" && (
+        <div className="mt-8">
+          {state.currency === "USDS" ? (
+            state.issuer.paymentRouting?.wallet?.chainName === "base" ? (
               <InvoiceToGnosis docState={state} />
-            </div>
-          ) : (
-            <div>
-              <br />
-              <div className="fixed inset-0 flex items-center justify-center z-50">
-                <div className="bg-red-500 text-white p-6 rounded-lg shadow-lg relative">
+            ) : (
+              <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+                <div className="bg-red-500 text-white p-8 rounded-lg shadow-xl relative max-w-md">
                   <button
-                    className="absolute top-2 right-2 text-white"
-                    onClick={handleReset}
+                    className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
+                    onClick={() =>
+                      dispatch(actions.editStatus({ status: "DRAFT" }))
+                    }
                   >
-                    &times;
+                    <span className="text-2xl">&times;</span>
                   </button>
-                  <h1>Use 'base' chain name instead</h1>
+                  <h1 className="text-xl font-semibold mb-2">Error</h1>
+                  <p>Please use 'base' chain name instead</p>
                 </div>
               </div>
-            </div>
-          )
-        ) : (
-          <div>
-            <br />
+            )
+          ) : (
             <RequestFinance docState={state} />
-          </div>
-        )
-      ) : null}
-      {/* JSON representation of the state */}
-      {/* <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <h3 className="text-xl font-semibold">State JSON</h3>
-        <pre className="whitespace-pre-wrap break-words text-sm text-gray-600">
-          {JSON.stringify(state, null, 2)}
-        </pre>
-      </div> */}
-      {/* <button onClick={handleUpdateInvoiceStatus} style={{ marginTop: "10px" }}>
-        Update Invoice Status
-      </button> */}
+          )}
+        </div>
+      )}
     </div>
   );
 }

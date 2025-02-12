@@ -4,7 +4,6 @@ import {
   AccountType,
   InputMaybe,
   LegalEntity,
-  LegalEntityId,
   Scalars,
 } from "../../document-models/invoice";
 import React, { useCallback, useState } from "react";
@@ -33,8 +32,8 @@ export type LegalEntityBankInput = {
   SWIFTIntermediary?: InputMaybe<Scalars["String"]["input"]>;
   accountNum?: InputMaybe<Scalars["String"]["input"]>;
   accountNumIntermediary?: InputMaybe<Scalars["String"]["input"]>;
-  accountType?: InputMaybe<AccountType | `${AccountType}`>;
-  accountTypeIntermediary?: InputMaybe<AccountType | `${AccountType}`>;
+  accountType?: InputMaybe<AccountType | AccountType>;
+  accountTypeIntermediary?: InputMaybe<AccountType | AccountType>;
   beneficiary?: InputMaybe<Scalars["String"]["input"]>;
   beneficiaryIntermediary?: InputMaybe<Scalars["String"]["input"]>;
   city?: InputMaybe<Scalars["String"]["input"]>;
@@ -104,7 +103,7 @@ const AccountTypeSelect = forwardRef(function AccountTypeSelect(
   );
 });
 
-const FieldLabel = ({ children }: { children: React.ReactNode }) => (
+const FieldLabel = ({ children }: { readonly children: React.ReactNode }) => (
   <label className="block text-sm font-medium text-gray-700">{children}</label>
 );
 
