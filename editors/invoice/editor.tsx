@@ -1,6 +1,6 @@
 import { Action, EditorProps } from "document-model/document";
 import { utils as documentModelUtils } from "document-model/document";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   InvoiceState,
   InvoiceAction,
@@ -17,7 +17,7 @@ import {
   EditIssuerWalletInput,
 } from "../../document-models/invoice";
 import { DateTimeLocalInput } from "./dateTimeLocalInput";
-import { LegalEntityForm } from "./legalEntity";
+import { LegalEntityForm } from "./legalEntity/legalEntity";
 import { LineItemsTable } from "./lineItems";
 import { loadUBLFile } from "./ingestUBL";
 import RequestFinance from "./requestFinance";
@@ -38,6 +38,19 @@ export default function Editor(
   const state = document.state.global;
 
   const [fiatMode, setFiatMode] = useState(state.currency != "USDS");
+
+  useEffect(() => {
+    if (!fiatMode) {
+      dispatch(actions.editInvoice({ currency: "USDS" }));
+    } else if (
+      state.lineItems.length &&
+      state.lineItems[0].currency != "USDS"
+    ) {
+      dispatch(actions.editInvoice({ currency: state.lineItems[0].currency }));
+    } else {
+      dispatch(actions.editInvoice({ currency: "USD" }));
+    }
+  }, [fiatMode]);
 
   const itemsTotalTaxExcl = useMemo(() => {
     return state.lineItems.reduce((total, lineItem) => {
@@ -249,7 +262,10 @@ export default function Editor(
           lineItems={state.lineItems}
           onAddItem={(item) => dispatch(actions.addLineItem(item))}
           onDeleteItem={(input) => dispatch(actions.deleteLineItem(input))}
-          onUpdateCurrency={(input) => dispatch(actions.editInvoice(input))}
+          onUpdateCurrency={(input) => {
+            setFiatMode(input.currency !== "USDS");
+            dispatch(actions.editInvoice(input));
+          }}
           onUpdateItem={(item) => dispatch(actions.editLineItem(item))}
         />
       </div>
