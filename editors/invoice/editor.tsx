@@ -37,7 +37,7 @@ export default function Editor(
   const { document, dispatch } = props;
   const state = document.state.global;
 
-  const [fiatMode, setFiatMode] = useState(false);
+  const [fiatMode, setFiatMode] = useState(state.currency != "USDS");
 
   const itemsTotalTaxExcl = useMemo(() => {
     return state.lineItems.reduce((total, lineItem) => {
@@ -50,85 +50,6 @@ export default function Editor(
       return total + lineItem.quantity * lineItem.unitPriceTaxIncl;
     }, 0.0);
   }, [state.lineItems]);
-
-  function handleAddItem(newItem: InvoiceLineItem) {
-    dispatch(actions.addLineItem(newItem));
-  }
-
-  function handleUpdateItem(updatedItem: InvoiceLineItem) {
-    dispatch(actions.editLineItem(updatedItem));
-  }
-
-  function handleDeleteItem(input: DeleteLineItemInput) {
-    dispatch(actions.deleteLineItem(input));
-  }
-
-  function handleUpdateDateIssued(e: React.ChangeEvent<HTMLInputElement>) {
-    dispatch(
-      actions.editInvoice({
-        dateIssued: e.target.value,
-      }),
-    );
-  }
-
-  function handleUpdateDateDelivered(e: React.ChangeEvent<HTMLInputElement>) {
-    dispatch(
-      actions.editInvoice({
-        dateDelivered: e.target.value,
-      }),
-    );
-  }
-
-  function handleUpdateDateDue(e: React.ChangeEvent<HTMLInputElement>) {
-    dispatch(
-      actions.editInvoice({
-        dateDue: e.target.value,
-      }),
-    );
-  }
-
-  function handleUpdateInvoiceNo(e: React.ChangeEvent<HTMLInputElement>) {
-    dispatch(
-      actions.editInvoice({
-        invoiceNo: e.target.value,
-      }),
-    );
-  }
-
-  function handleUpdateCurrency(input: EditInvoiceInput) {
-    dispatch(actions.editInvoice(input));
-  }
-
-  function handleUpdateIssuerInfo(input: EditIssuerInput) {
-    console.log("input: ", input);
-    dispatch(actions.editIssuer(input));
-  }
-
-  function handleUpdateIssuerBank(input: EditIssuerBankInput) {
-    dispatch(actions.editIssuerBank(input));
-  }
-
-  function handleUpdateIssuerWallet(input: EditIssuerWalletInput) {
-    dispatch(actions.editIssuerWallet(input));
-  }
-
-  function handleUpdatePayerInfo(input: EditPayerInput) {
-    dispatch(actions.editPayer(input));
-  }
-
-  function handleUpdateStatus(event: React.ChangeEvent<HTMLSelectElement>) {
-    const newStatus = event.target.value;
-    if (isValidStatus(newStatus)) {
-      const input: EditStatusInput = {
-        status: newStatus,
-      };
-      dispatch(actions.editStatus(input));
-    }
-  }
-
-  function isValidStatus(status: string): status is Status {
-    return ["DRAFT", "ISSUED", "ACCEPTED", "REJECTED", "PAID"].includes(status);
-  }
 
   const getStatusStyle = (status: Status) => {
     const baseStyle = "px-4 py-2 rounded-full font-semibold text-sm";
