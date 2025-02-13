@@ -87,7 +87,7 @@ router.get('/transaction-status/:safeTxHash/:invoiceNo', (req, res) => {
 
     // Start monitoring the transaction
     const interval = 5000; // 5 seconds
-    const maxAttempts = 60; // Maximum number of attempts (e.g., 5 minutes)
+    const maxAttempts = 360; // Maximum number of attempts (e.g., 30 minutes)
     let attempts = 0;
     const intervalId = setInterval(async () => {
         try {
