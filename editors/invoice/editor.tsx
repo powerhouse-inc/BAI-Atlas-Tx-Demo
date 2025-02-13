@@ -98,7 +98,7 @@ export default function Editor(
   const handleUpdateInvoiceStatus = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/update-invoice-status",
+        "http://localhost:5001/api/update-invoice-status",
         {
           invoiceNo: state.invoiceNo,
         },

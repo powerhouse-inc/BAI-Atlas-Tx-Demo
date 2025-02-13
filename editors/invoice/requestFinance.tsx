@@ -29,7 +29,7 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/create-invoice",
+        "http://localhost:5001/api/create-invoice",
         {
           meta: {
             format: "rnf_generic",
@@ -39,7 +39,7 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
             `${docState.dateIssued}T09:38:16.916Z` ||
             "2025-01-27T14:38:16.916Z",
           invoiceItems: docState.lineItems.map((item: any) => ({
-            currency: item.currency,
+            currency: bankDetails.currency,
             name: item.description,
             quantity: item.quantity,
             unitPrice: item.totalPriceTaxIncl * 100,
@@ -58,15 +58,15 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
             lastName: "Liberty",
           },
           sellerInfo: {
-            email: "contributor@contributor.com",
-            firstName: "open source",
-            lastName: "contributor",
+            email: docState.issuer.contactInfo.email ||	 "contributor@contributor.com",
+            firstName: docState.issuer.name || "place holder name",
+            // lastName: docState.issuer.name || "contributor",
           },
           paymentOptions: [
             {
               type: "bank-account",
               value: {
-                currency: "EUR",
+                currency: bankDetails.currency,
                 paymentInformation: {
                   bankAccountDetails: {
                     accountNumber: bankDetails.accountNumber, // the IBAN
@@ -91,7 +91,7 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
         setInvoiceLink(response.data.invoiceLinks.pay);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.response.data.errors[0] : "An error occurred");
     } finally {
       setIsLoading(false);
     }
