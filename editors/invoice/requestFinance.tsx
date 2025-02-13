@@ -39,7 +39,7 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
             `${docState.dateIssued}T09:38:16.916Z` ||
             "2025-01-27T14:38:16.916Z",
           invoiceItems: docState.lineItems.map((item: any) => ({
-            currency: item.currency,
+            currency: bankDetails.currency,
             name: item.description,
             quantity: item.quantity,
             unitPrice: item.totalPriceTaxIncl * 100,
