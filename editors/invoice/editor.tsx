@@ -39,20 +39,6 @@ export default function Editor(
 
   const [fiatMode, setFiatMode] = useState(state.currency != "USDS");
 
-  useEffect(() => {
-    if (!fiatMode) {
-      dispatch(actions.editInvoice({ currency: "USDS" }));
-    } else if (
-      state.lineItems.length &&
-      state.lineItems[0].currency &&
-      state.lineItems[0].currency !== "USDS"
-    ) {
-      dispatch(actions.editInvoice({ currency: state.lineItems[0].currency }));
-    } else {
-      dispatch(actions.editInvoice({ currency: "USD" }));
-    }
-  }, [fiatMode]);
-
   const itemsTotalTaxExcl = useMemo(() => {
     return state.lineItems.reduce((total, lineItem) => {
       return total + lineItem.quantity * lineItem.unitPriceTaxExcl;
