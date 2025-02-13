@@ -159,6 +159,7 @@ export class UBLConverter {
           ),
         }),
       );
+
       const paymentMeans = invoice.querySelector(
         "PaymentMeans, cac\\:PaymentMeans",
       );
@@ -205,10 +206,15 @@ export class UBLConverter {
     if (customer) {
       this.dispatch(
         actions.editPayer({
-          id: this.getElementText(
-            customer,
-            "PartyIdentification ID, cac\\:PartyIdentification cbc\\:ID",
-          ),
+          id:
+            this.getElementText(
+              customer,
+              "PartyIdentification ID, cac\\:PartyIdentification cbc\\:ID",
+            ) ||
+            this.getElementText(
+              customer,
+              "CompanyID, cac\\:CompanyID cbc\\:ID",
+            ),
           name: this.getElementText(
             customer,
             "PartyName Name, cac\\:PartyName cbc\\:Name",

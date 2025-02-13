@@ -18,7 +18,7 @@ import {
   EditIssuerWalletInputSchema,
 } from "../../../document-models/invoice/gen/schema/zod";
 
-import React, { ComponentProps, useState } from "react";
+import React, { ComponentProps, useEffect, useState } from "react";
 import { ComponentPropsWithRef, Ref } from "react";
 import { twMerge } from "tailwind-merge";
 import { LegalEntityWalletSection } from "./walletSection";
@@ -60,12 +60,17 @@ export type LegalEntityMainSectionProps = Omit<
 export const LegalEntityMainSection = (props: LegalEntityMainSectionProps) => {
   const { value, onChange, disabled, ...divProps } = props;
 
-  const normalizedId =
-    typeof value.id === "string"
-      ? value.id
-      : ((value.id as any)?.taxId ?? (value.id as any)?.corpRegId ?? "");
+  const normalizeId = (id: any) => {
+    return typeof value.id === "string"
+      ? id
+      : ((id as any)?.taxId ?? (id as any)?.corpRegId ?? "");
+  };
 
-  const [taxId, setTaxId] = useState(normalizedId);
+  const [taxId, setTaxId] = useState(normalizeId(value.id));
+
+  useEffect(() => {
+    setTaxId(normalizeId(value.id));
+  }, [value]);
 
   const handleInputChange =
     (field: keyof EditLegalEntityInput) =>
