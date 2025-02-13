@@ -66,7 +66,7 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
             {
               type: "bank-account",
               value: {
-                currency: "EUR",
+                currency: bankDetails.currency,
                 paymentInformation: {
                   bankAccountDetails: {
                     accountNumber: bankDetails.accountNumber, // the IBAN
