@@ -44,7 +44,8 @@ export default function Editor(
       dispatch(actions.editInvoice({ currency: "USDS" }));
     } else if (
       state.lineItems.length &&
-      state.lineItems[0].currency != "USDS"
+      state.lineItems[0].currency &&
+      state.lineItems[0].currency !== "USDS"
     ) {
       dispatch(actions.editInvoice({ currency: state.lineItems[0].currency }));
     } else {
