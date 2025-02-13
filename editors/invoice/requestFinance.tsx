@@ -58,9 +58,9 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
             lastName: "Liberty",
           },
           sellerInfo: {
-            email: "contributor@contributor.com",
-            firstName: "open source",
-            lastName: "contributor",
+            email: docState.issuer.contactInfo.email ||	 "contributor@contributor.com",
+            firstName: docState.issuer.name || "place holder name",
+            // lastName: docState.issuer.name || "contributor",
           },
           paymentOptions: [
             {
@@ -91,7 +91,7 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
         setInvoiceLink(response.data.invoiceLinks.pay);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.response.data.errors[0] : "An error occurred");
     } finally {
       setIsLoading(false);
     }
