@@ -16,7 +16,7 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
   useEffect(() => {
     if (safeTxHash) {
       const eventSource = new EventSource(
-        `http://localhost:5000/api/transaction-status/${safeTxHash}/${docState.invoiceNo}`
+        `http://localhost:5001/api/transaction-status/${safeTxHash}/${docState.invoiceNo}`
       );
 
       eventSource.onmessage = (event) => {
@@ -97,7 +97,7 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/transfer", {
+      const response = await fetch("http://localhost:5001/api/transfer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,7 +123,7 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
   const handleUpdateInvoiceStatus = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/update-invoice-status",
+        "http://localhost:5001/api/update-invoice-status",
         {
           invoiceNo: docState.invoiceNo,
         }
