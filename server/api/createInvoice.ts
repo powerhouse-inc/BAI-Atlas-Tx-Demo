@@ -67,7 +67,7 @@ router.post('/transfer', async (req, res) => {
         const { payerWallet, paymentDetails, invoiceNo } = req.body;
         const result = await executeTokenTransfer(payerWallet, paymentDetails);
         res.json(result);
-        await checkTransactionExecuted(result.txHash.safeTxHash, invoiceNo);
+        // await checkTransactionExecuted(result.txHash.safeTxHash, invoiceNo);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
@@ -104,8 +104,8 @@ router.get('/transaction-status/:safeTxHash/:invoiceNo', (req, res) => {
                 clearInterval(intervalId);
                 res.end();
             }
-        } catch (error) {
-            console.error('Error fetching transaction details:', error);
+        } catch (error: any) {
+            console.error('Error updating invoice status');
             clearInterval(intervalId);
             res.end();
         }

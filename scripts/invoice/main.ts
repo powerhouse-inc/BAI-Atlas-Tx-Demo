@@ -36,9 +36,9 @@ export const updateInvoiceStatus = async (invoiceNumber: string): Promise<void> 
                 return Promise.resolve();
             }
         });
-    } catch (error) {
-        console.error('Error updating invoice status:', error);
-        return Promise.reject(error);
+    } catch (error: any) {
+        console.error('Error updating invoice status:', error.message);
+        // return Promise.reject(error);
     }
 
 }
