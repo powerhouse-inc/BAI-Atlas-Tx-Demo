@@ -9,7 +9,7 @@ const API_URL = 'https://api.request.finance/invoices';
 const API_KEY = process.env.REQUEST_FINANCE_API_KEY; // Store in .env file
 
 router.post('/create-invoice', async (req, res) => {
-    console.log('Getting a request to create an invoice');
+    console.log('Getting a request to create an invoice', req.body);
     try {
         // First API call to create the invoice
         const response = await axios.post(API_URL, req.body, {
