@@ -22,8 +22,8 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
       accountNumber: docState.issuer.paymentRouting.bank.accountNum || "DE89300500000132013000", // the IBAN
       country: docState.issuer.paymentRouting.bank.address.country.toUpperCase() || "DE",
       bankName: docState.issuer.paymentRouting.bank.name || "GmbH Bank Name",
-      firstName: docState.issuer.paymentRouting.bank.beneficiary || "Liberuum",
-      lastName: "Liberty",
+      firstName: docState.issuer.paymentRouting.bank.beneficiary.split(' ')[0] || "Liberuum",
+      lastName: docState.issuer.paymentRouting.bank.beneficiary.split(' ')[1] || "Liberty",
       bicSwift: docState.issuer.paymentRouting.bank.BIC || "GMBHDEFFXXX",
     };
 
