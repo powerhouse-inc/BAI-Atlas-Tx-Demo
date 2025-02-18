@@ -121,7 +121,11 @@ const styles = StyleSheet.create({
 // Format date to readable string
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString();
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 // Format currency
@@ -131,6 +135,7 @@ const formatCurrency = (amount: number, currency: string) => {
 
 interface InvoicePDFProps {
   invoice: InvoiceState;
+  fiatMode: boolean;
 }
 
 export const InvoicePDF: React.FC<InvoicePDFProps> = ({
@@ -141,274 +146,244 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-          <Text style={[styles.title, { marginBottom: 0 }]}>Invoice</Text>
-          <Text style={styles.invoiceNumber}>{invoice.invoiceNo}</Text>
-        </View>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-          <Text style={[styles.title, { marginBottom: 0, fontSize: 10 }]}>
-            Currency:
-          </Text>
-          <Text style={styles.status}>{invoice.currency}</Text>
-        </View>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-          <Text style={[styles.title, { marginBottom: 0, fontSize: 10 }]}>
-            Status:
-          </Text>
-          <Text style={styles.status}>{invoice.status}</Text>
-        </View>
-      </View>
-
-      <View style={styles.gridContainer}>
-        {/* Issuer Section */}
-        <View style={styles.gridColumn}>
-          <Text style={styles.sectionTitle}>Issuer</Text>
-          <View style={styles.row}>
-            <Text style={styles.label}>Issue Date:</Text>
-            <Text style={styles.value}>{formatDate(invoice.dateIssued)}</Text>
+        <View style={styles.header}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+            <Text style={[styles.title, { marginBottom: 0 }]}>Invoice</Text>
+            <Text style={styles.invoiceNumber}>{invoice.invoiceNo}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Delivery Date:</Text>
-            <Text style={styles.value}>
-              {formatDate(invoice.dateDelivered || invoice.dateIssued)}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+            <Text style={[styles.title, { marginBottom: 0, fontSize: 10 }]}>
+              Currency:
             </Text>
+            <Text style={styles.status}>{invoice.currency}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Name:</Text>
-            <Text style={styles.value}>{invoice.issuer.name}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Address:</Text>
-            <Text style={styles.value}>
-              {invoice.issuer.address?.streetAddress || ""}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+            <Text style={[styles.title, { marginBottom: 0, fontSize: 10 }]}>
+              Status:
             </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>City:</Text>
-            <Text style={styles.value}>
-              {invoice.issuer.address?.city || ""}
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Country:</Text>
-            <Text style={styles.value}>
-              {invoice.issuer.address?.country || ""}
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Email:</Text>
-            <Text style={styles.value}>
-              {invoice.issuer.contactInfo?.email || ""}
-            </Text>
+            <Text style={styles.status}>{invoice.status}</Text>
           </View>
         </View>
 
-        {/* Payer Section */}
-        <View style={styles.gridColumn}>
-          <Text style={styles.sectionTitle}>Payer</Text>
-          <View style={styles.row}>
-            <Text style={styles.label}>Due Date:</Text>
-            <Text style={styles.value}>{formatDate(invoice.dateDue)}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Name:</Text>
-            <Text style={styles.value}>{invoice.payer.name}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Address:</Text>
-            <Text style={styles.value}>
-              {invoice.issuer.address?.streetAddress || ""}
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>City:</Text>
-            <Text style={styles.value}>
-              {invoice.payer.address?.city || ""}
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Country:</Text>
-            <Text style={styles.value}>
-              {invoice.payer.address?.country || ""}
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Email:</Text>
-            <Text style={styles.value}>
-              {invoice.payer.contactInfo?.email || ""}
-            </Text>
-          </View>
+        <View style={styles.gridContainer}>
+          <InvoiceSection
+            title="Issuer"
+            data={{
+              ...invoice.issuer,
+              dateDue: invoice.dateDue,
+              dateIssued: invoice.dateIssued,
+            }}
+          />
+          <InvoiceSection
+            title="Payer"
+            data={{
+              ...invoice.payer,
+              dateDue: invoice.dateDue,
+              dateIssued: invoice.dateIssued,
+            }}
+          />
         </View>
-      </View>
-      {/* Payment Information */}
-      <View style={styles.paymentSection}>
-        <Text style={styles.paymentTitle}>Payment Information</Text>
-        {fiatMode ? (
-          <View style={[styles.gridContainer, { marginTop: 0 }]}>
-            {/* Left Column - Bank Address */}
-            <View style={styles.gridColumn}>
-              <View style={styles.row}>
-                <Text style={styles.label}>Bank Name:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.name || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Address:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.address?.streetAddress || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>City:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.address?.city || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Country:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.address?.country || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Extended Address:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.address?.extendedAddress || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Postal Code:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.address?.postalCode || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>State/Province:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.address?.stateProvince || ""}
-                </Text>
-              </View>
-            </View>
-            {/* Right Column - Account Details */}
-            <View style={styles.gridColumn}>
-              <View style={styles.row}>
-                <Text style={styles.label}>Account Type:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.accountType || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Account Nr:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.accountNum || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Beneficiary:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.beneficiary || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>
-                  {invoice.issuer.paymentRouting?.bank?.BIC
-                    ? "BIC:"
-                    : invoice.issuer.paymentRouting?.bank?.SWIFT
-                    ? "SWIFT:"
-                    : invoice.issuer.paymentRouting?.bank?.ABA
-                    ? "ABA:"
-                    : "Routing:"}
-                </Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.bank?.BIC ||
-                    invoice.issuer.paymentRouting?.bank?.SWIFT ||
-                    invoice.issuer.paymentRouting?.bank?.ABA ||
-                    ""}
-                </Text>
-              </View>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.row}>
-            <View style={styles.gridColumn}>
-              <View style={styles.row}>
-                <Text style={styles.label}>Chain:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.wallet?.chainName || ""}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Address:</Text>
-                <Text style={styles.value}>
-                  {invoice.issuer.paymentRouting?.wallet?.address || ""}
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
-      </View>
 
-      {/* Line Items */}
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={styles.tableCol40}>Description</Text>
-          <Text style={styles.tableCol15}>Quantity</Text>
-          <Text style={styles.tableCol15}>Unit Price</Text>
-          <Text style={styles.tableCol15}>Tax</Text>
-          <Text style={styles.tableCol15}>Total</Text>
+        {/* Payment Information */}
+        <View style={styles.paymentSection}>
+          <Text style={styles.paymentTitle}>Payment Information</Text>
+          {fiatMode ? (
+            <PaymentSectionFiat
+              paymentRouting={invoice.issuer.paymentRouting}
+            />
+          ) : (
+            <PaymentSectionCrypto
+              paymentRouting={invoice.issuer.paymentRouting}
+            />
+          )}
         </View>
-        {invoice.lineItems.map((item, index) => (
-          <View key={index} style={styles.tableRow}>
-            <Text style={styles.tableCol40}>{item.description}</Text>
-            <Text style={styles.tableCol15}>{item.quantity}</Text>
-            <Text style={styles.tableCol15}>
-              {formatCurrency(item.unitPriceTaxExcl, invoice.currency)}
-            </Text>
-            <Text style={styles.tableCol15}>
+
+        {/* Line Items */}
+        <View style={styles.table}>
+          <View style={styles.tableHeader}>
+            <Text style={styles.tableCol40}>Description</Text>
+            <Text style={styles.tableCol15}>Quantity</Text>
+            <Text style={styles.tableCol15}>Unit Price</Text>
+            <Text style={styles.tableCol15}>Tax</Text>
+            <Text style={styles.tableCol15}>Total</Text>
+          </View>
+          {invoice.lineItems.map((item, index) => (
+            <InvoiceLineItem
+              key={index}
+              item={item}
+              currency={invoice.currency}
+            />
+          ))}
+        </View>
+
+        {/* Totals */}
+        <View style={styles.totals}>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Subtotal:</Text>
+            <Text style={styles.totalValue}>
               {formatCurrency(
-                item.unitPriceTaxIncl - item.unitPriceTaxExcl,
-                invoice.currency
-              )}
-            </Text>
-            <Text style={styles.tableCol15}>
-              {formatCurrency(
-                item.quantity * item.unitPriceTaxIncl,
+                invoice.lineItems.reduce(
+                  (sum, item) => sum + item.quantity * item.unitPriceTaxExcl,
+                  0
+                ),
                 invoice.currency
               )}
             </Text>
           </View>
-        ))}
-      </View>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Total (incl. tax):</Text>
+            <Text style={styles.totalValue}>
+              {formatCurrency(
+                invoice.lineItems.reduce(
+                  (sum, item) => sum + item.quantity * item.unitPriceTaxIncl,
+                  0
+                ),
+                invoice.currency
+              )}
+            </Text>
+          </View>
+        </View>
+      </Page>
+    </Document>
+  );
+};
 
-      {/* Totals */}
-      <View style={styles.totals}>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Subtotal:</Text>
-          <Text style={styles.totalValue}>
-            {formatCurrency(
-              invoice.lineItems.reduce(
-                (sum, item) => sum + item.quantity * item.unitPriceTaxExcl,
-                0
-              ),
-              invoice.currency
-            )}
-          </Text>
-        </View>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total (incl. tax):</Text>
-          <Text style={styles.totalValue}>
-            {formatCurrency(
-              invoice.lineItems.reduce(
-                (sum, item) => sum + item.quantity * item.unitPriceTaxIncl,
-                0
-              ),
-              invoice.currency
-            )}
-          </Text>
-        </View>
-      </View>
-    </Page>
-  </Document>
-)};
+// New component for issuer and payer sections
+const InvoiceSection: React.FC<{ title: string; data: any }> = ({
+  title,
+  data,
+}) => (
+  <View style={styles.gridColumn}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    {title === "Issuer" && (
+      <>
+        <InvoiceField label="Issue Date" value={formatDate(data.dateIssued)} />
+        <InvoiceField label="Delivery Date" value={formatDate(data.dateDue)} />
+      </>
+    )}
+    {title === "Payer" && (
+      <InvoiceField label="Due Date" value={formatDate(data.dateDue)} />
+    )}
+    <InvoiceField label="Name" value={data.name} />
+    <InvoiceField label="Address" value={data.address?.streetAddress || ""} />
+    <InvoiceField label="City" value={data.address?.city || ""} />
+    <InvoiceField label="Country" value={data.address?.country || ""} />
+    <InvoiceField label="Email" value={data.contactInfo?.email || ""} />
+  </View>
+);
+
+// New component for individual fields
+const InvoiceField: React.FC<{ label: string; value: string }> = ({
+  label,
+  value,
+}) =>
+  value && (
+    <View style={styles.row}>
+      <Text style={styles.label}>{label}:</Text>
+      <Text style={styles.value}>{value}</Text>
+    </View>
+  );
+
+// New component for fiat payment section
+const PaymentSectionFiat: React.FC<{ paymentRouting: any }> = ({
+  paymentRouting,
+}) => (
+  <View style={[styles.gridContainer, { marginTop: 0 }]}>
+    <View style={styles.gridColumn}>
+      <InvoiceField label="Bank Name" value={paymentRouting.bank?.name || ""} />
+      <InvoiceField
+        label="Address"
+        value={paymentRouting.bank?.address?.streetAddress || ""}
+      />
+      <InvoiceField
+        label="City"
+        value={paymentRouting.bank?.address?.city || ""}
+      />
+      <InvoiceField
+        label="Country"
+        value={paymentRouting.bank?.address?.country || ""}
+      />
+      <InvoiceField
+        label="Extended Address"
+        value={paymentRouting.bank?.address?.extendedAddress || ""}
+      />
+      <InvoiceField
+        label="Postal Code"
+        value={paymentRouting.bank?.address?.postalCode || ""}
+      />
+      <InvoiceField
+        label="State/Province"
+        value={paymentRouting.bank?.address?.stateProvince || ""}
+      />
+    </View>
+    <View style={styles.gridColumn}>
+      <InvoiceField
+        label="Account Type"
+        value={paymentRouting.bank?.accountType || ""}
+      />
+      <InvoiceField
+        label="Account Nr"
+        value={paymentRouting.bank?.accountNum || ""}
+      />
+      <InvoiceField
+        label="Beneficiary"
+        value={paymentRouting.bank?.beneficiary || ""}
+      />
+      <InvoiceField
+        label={
+          paymentRouting.bank?.BIC
+            ? "BIC:"
+            : paymentRouting.bank?.SWIFT
+              ? "SWIFT:"
+              : paymentRouting.bank?.ABA
+                ? "ABA:"
+                : "Routing:"
+        }
+        value={
+          paymentRouting.bank?.BIC ||
+          paymentRouting.bank?.SWIFT ||
+          paymentRouting.bank?.ABA ||
+          ""
+        }
+      />
+    </View>
+  </View>
+);
+
+// New component for crypto payment section
+const PaymentSectionCrypto: React.FC<{ paymentRouting: any }> = ({
+  paymentRouting,
+}) => (
+  <View style={styles.row}>
+    <View style={styles.gridColumn}>
+      <InvoiceField
+        label="Chain"
+        value={paymentRouting.wallet?.chainName || ""}
+      />
+      <InvoiceField
+        label="Address"
+        value={paymentRouting.wallet?.address || ""}
+      />
+    </View>
+  </View>
+);
+
+// New component for line items
+const InvoiceLineItem: React.FC<{ item: any; currency: string }> = ({
+  item,
+  currency,
+}) => (
+  <View style={styles.tableRow}>
+    <Text style={styles.tableCol40}>{item.description}</Text>
+    <Text style={styles.tableCol15}>{item.quantity}</Text>
+    <Text style={styles.tableCol15}>
+      {formatCurrency(item.unitPriceTaxExcl, currency)}
+    </Text>
+    <Text style={styles.tableCol15}>
+      {formatCurrency(item.unitPriceTaxIncl - item.unitPriceTaxExcl, currency)}
+    </Text>
+    <Text style={styles.tableCol15}>
+      {formatCurrency(item.quantity * item.unitPriceTaxIncl, currency)}
+    </Text>
+  </View>
+);
