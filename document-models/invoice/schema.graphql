@@ -63,7 +63,7 @@ type ContactInfo {
 
 type PaymentRouting {
   bank: Bank
-  wallet: Wallet
+  wallet: InvoiceWallet
 }
 
 type Bank {
@@ -91,7 +91,7 @@ type IntermediaryBank {
   memo: String
 }
 
-type Wallet {
+type InvoiceWallet {
   rpc: String
   chainName: String
   chainId: String

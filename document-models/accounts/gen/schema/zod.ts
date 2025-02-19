@@ -56,11 +56,9 @@ export function CreateAccountInputSchema(): z.ZodObject<
   Properties<CreateAccountInput>
 > {
   return z.object({
-    account: z
-      .string()
-      .regex(/^0x[a-fA-F0-9]{40}$/, {
-        message: "Invalid Ethereum address format",
-      }),
+    account: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
+      message: "Invalid Ethereum address format",
+    }),
     budgetPath: z.string().nullish(),
     name: z.string().nullish(),
     type: AccountTypeSchema,

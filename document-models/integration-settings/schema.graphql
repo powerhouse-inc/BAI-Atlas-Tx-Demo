@@ -22,10 +22,10 @@ type RequestFinance {
 }
 
 type GnosisSafe {
-  wallets: [Wallet]
+  wallets: [IWallet]
 }
 
-type Wallet {
+type IWallet {
   name: String
   address: String
   privateKey: String

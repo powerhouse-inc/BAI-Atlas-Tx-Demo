@@ -44,7 +44,13 @@ export type DeleteGnosisWalletInput = {
 };
 
 export type GnosisSafe = {
-  wallets: Maybe<Array<Maybe<Wallet>>>;
+  wallets: Maybe<Array<Maybe<IWallet>>>;
+};
+
+export type IWallet = {
+  address: Maybe<Scalars["String"]["output"]>;
+  name: Maybe<Scalars["String"]["output"]>;
+  privateKey: Maybe<Scalars["String"]["output"]>;
 };
 
 export type IntegrationSettingsState = {
@@ -68,10 +74,4 @@ export type UpdateRequestFinanceInput = {
   accountEmail?: InputMaybe<Scalars["EmailAddress"]["input"]>;
   appId?: InputMaybe<Scalars["String"]["input"]>;
   appSecret?: InputMaybe<Scalars["String"]["input"]>;
-};
-
-export type Wallet = {
-  address: Maybe<Scalars["String"]["output"]>;
-  name: Maybe<Scalars["String"]["output"]>;
-  privateKey: Maybe<Scalars["String"]["output"]>;
 };

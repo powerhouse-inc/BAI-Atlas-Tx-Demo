@@ -2,11 +2,11 @@ import { z } from "zod";
 import {
   DeleteGnosisWalletInput,
   GnosisSafe,
+  IWallet,
   IntegrationSettingsState,
   RequestFinance,
   UpdateGnosisSafeInput,
   UpdateRequestFinanceInput,
-  Wallet,
 } from "./types";
 
 type Properties<T> = Required<{
@@ -33,7 +33,16 @@ export function DeleteGnosisWalletInputSchema(): z.ZodObject<
 export function GnosisSafeSchema(): z.ZodObject<Properties<GnosisSafe>> {
   return z.object({
     __typename: z.literal("GnosisSafe").optional(),
-    wallets: z.array(WalletSchema().nullable()).nullable(),
+    wallets: z.array(IWalletSchema().nullable()).nullable(),
+  });
+}
+
+export function IWalletSchema(): z.ZodObject<Properties<IWallet>> {
+  return z.object({
+    __typename: z.literal("IWallet").optional(),
+    address: z.string().nullable(),
+    name: z.string().nullable(),
+    privateKey: z.string().nullable(),
   });
 }
 
@@ -75,14 +84,5 @@ export function UpdateRequestFinanceInputSchema(): z.ZodObject<
     accountEmail: z.string().email().nullish(),
     appId: z.string().nullish(),
     appSecret: z.string().nullish(),
-  });
-}
-
-export function WalletSchema(): z.ZodObject<Properties<Wallet>> {
-  return z.object({
-    __typename: z.literal("Wallet").optional(),
-    address: z.string().nullable(),
-    name: z.string().nullable(),
-    privateKey: z.string().nullable(),
   });
 }

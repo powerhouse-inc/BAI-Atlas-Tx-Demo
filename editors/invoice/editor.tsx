@@ -32,7 +32,7 @@ import Toggle from "react-toggle";
 import "./toggle.css";
 
 export default function Editor(
-  props: EditorProps<InvoiceState, InvoiceAction, InvoiceLocalState>
+  props: EditorProps<InvoiceState, InvoiceAction, InvoiceLocalState>,
 ) {
   // generate a random id
   // const id = documentModelUtils.hashKey();
@@ -81,7 +81,7 @@ export default function Editor(
   ];
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -142,7 +142,7 @@ export default function Editor(
             }
             return null;
           }}
-        </PDFDownloadLink>
+        </PDFDownloadLink>,
       );
     } catch (error) {
       console.error("Error exporting PDF:", error);
@@ -161,7 +161,7 @@ export default function Editor(
         "http://localhost:5001/api/update-invoice-status",
         {
           invoiceNo: state.invoiceNo,
-        }
+        },
       );
       toast(response.data.message, {
         type: "success",
@@ -268,7 +268,7 @@ export default function Editor(
                 inputType="date"
                 onChange={(e) =>
                   dispatch(
-                    actions.editInvoice({ dateDelivered: e.target.value })
+                    actions.editInvoice({ dateDelivered: e.target.value }),
                   )
                 }
                 value={state.dateDelivered || state.dateIssued}

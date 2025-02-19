@@ -21,11 +21,17 @@ export default function Editor(props: IProps) {
   const [appSecret, setAppSecret] = useState("");
 
   // State for new wallet inputs
-  const [newWallet, setNewWallet] = useState({ name: "", address: "", privateKey: "" });
+  const [newWallet, setNewWallet] = useState({
+    name: "",
+    address: "",
+    privateKey: "",
+  });
   const [addingWallet, setAddingWallet] = useState(false);
 
   // State for selected wallets
-  const [selectedWallets, setSelectedWallets] = useState<Set<number>>(new Set());
+  const [selectedWallets, setSelectedWallets] = useState<Set<number>>(
+    new Set(),
+  );
 
   // Handle form submission
   const handleSubmit = () => {
@@ -46,7 +52,7 @@ export default function Editor(props: IProps) {
           accountEmail: email || stateAccountEmail,
           appId: appId || stateAppId,
           appSecret: appSecret || stateAppSecret,
-        })
+        }),
       );
     }
   };
@@ -62,7 +68,7 @@ export default function Editor(props: IProps) {
         name: newWallet.name,
         address: newWallet.address,
         privateKey: newWallet.privateKey,
-      })
+      }),
     );
 
     // Reset new wallet state
@@ -94,7 +100,9 @@ export default function Editor(props: IProps) {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1 style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "20px" }}>
+      <h1
+        style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "20px" }}
+      >
         Request Finance
       </h1>
       <div style={{ marginBottom: "10px" }}>
@@ -147,7 +155,11 @@ export default function Editor(props: IProps) {
         Submit
       </Button>
 
-      <h2 style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "10px" }}>Gnosis Safe</h2>
+      <h2
+        style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "10px" }}
+      >
+        Gnosis Safe
+      </h2>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
@@ -195,34 +207,55 @@ export default function Editor(props: IProps) {
                 <input
                   type="text"
                   value={newWallet.name}
-                  onChange={(e) => setNewWallet({ ...newWallet, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewWallet({ ...newWallet, name: e.target.value })
+                  }
                   placeholder="Name"
-                  style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    boxSizing: "border-box",
+                  }}
                 />
               </td>
               <td style={{ border: "1px solid #ccc", padding: "8px" }}>
                 <input
                   type="text"
                   value={newWallet.address}
-                  onChange={(e) => setNewWallet({ ...newWallet, address: e.target.value })}
+                  onChange={(e) =>
+                    setNewWallet({ ...newWallet, address: e.target.value })
+                  }
                   placeholder="Address"
-                  style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    boxSizing: "border-box",
+                  }}
                 />
               </td>
               <td style={{ border: "1px solid #ccc", padding: "8px" }}>
                 <input
                   type="text"
                   value={newWallet.privateKey}
-                  onChange={(e) => setNewWallet({ ...newWallet, privateKey: e.target.value })}
+                  onChange={(e) =>
+                    setNewWallet({ ...newWallet, privateKey: e.target.value })
+                  }
                   placeholder="Private Key"
-                  style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    boxSizing: "border-box",
+                  }}
                 />
               </td>
             </tr>
           )}
         </tbody>
       </table>
-      <Button onClick={() => setAddingWallet(true)} style={{ marginTop: "10px" }}>
+      <Button
+        onClick={() => setAddingWallet(true)}
+        style={{ marginTop: "10px" }}
+      >
         Add New Wallet
       </Button>
       {addingWallet && (

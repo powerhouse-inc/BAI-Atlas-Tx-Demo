@@ -21,6 +21,7 @@ import {
   IntermediaryBank,
   InvoiceLineItem,
   InvoiceState,
+  InvoiceWallet,
   LegalEntity,
   LegalEntityCorporateRegistrationId,
   LegalEntityTaxId,
@@ -28,7 +29,6 @@ import {
   Ref,
   Status,
   Token,
-  Wallet,
 } from "./types";
 
 type Properties<T> = Required<{
@@ -355,6 +355,16 @@ export function InvoiceStateSchema(): z.ZodObject<Properties<InvoiceState>> {
   });
 }
 
+export function InvoiceWalletSchema(): z.ZodObject<Properties<InvoiceWallet>> {
+  return z.object({
+    __typename: z.literal("InvoiceWallet").optional(),
+    address: z.string().nullable(),
+    chainId: z.string().nullable(),
+    chainName: z.string().nullable(),
+    rpc: z.string().nullable(),
+  });
+}
+
 export function LegalEntitySchema(): z.ZodObject<Properties<LegalEntity>> {
   return z.object({
     __typename: z.literal("LegalEntity").optional(),
@@ -398,7 +408,7 @@ export function PaymentRoutingSchema(): z.ZodObject<
   return z.object({
     __typename: z.literal("PaymentRouting").optional(),
     bank: BankSchema().nullable(),
-    wallet: WalletSchema().nullable(),
+    wallet: InvoiceWalletSchema().nullable(),
   });
 }
 
@@ -418,15 +428,5 @@ export function TokenSchema(): z.ZodObject<Properties<Token>> {
     evmAddress: z.string().nullable(),
     rpc: z.string().nullable(),
     symbol: z.string().nullable(),
-  });
-}
-
-export function WalletSchema(): z.ZodObject<Properties<Wallet>> {
-  return z.object({
-    __typename: z.literal("Wallet").optional(),
-    address: z.string().nullable(),
-    chainId: z.string().nullable(),
-    chainName: z.string().nullable(),
-    rpc: z.string().nullable(),
   });
 }
