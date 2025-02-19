@@ -24,15 +24,15 @@ import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
 import { toast } from "@powerhousedao/design-system";
-import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
-import { InvoicePDF } from './InvoicePDF';
-import { createRoot } from 'react-dom/client';
+import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
+import { InvoicePDF } from "./InvoicePDF";
+import { createRoot } from "react-dom/client";
 
 import Toggle from "react-toggle";
 import "./toggle.css";
 
 export default function Editor(
-  props: EditorProps<InvoiceState, InvoiceAction, InvoiceLocalState>,
+  props: EditorProps<InvoiceState, InvoiceAction, InvoiceLocalState>
 ) {
   // generate a random id
   // const id = documentModelUtils.hashKey();
@@ -81,7 +81,7 @@ export default function Editor(
   ];
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -96,8 +96,8 @@ export default function Editor(
 
   const handleExportPDF = () => {
     // Create a temporary container for the PDFDownloadLink
-    const container = window.document.createElement('div');
-    container.style.display = 'none';
+    const container = window.document.createElement("div");
+    container.style.display = "none";
     window.document.body.appendChild(container);
 
     // Create root for React 18
@@ -113,7 +113,7 @@ export default function Editor(
       root.render(
         <PDFDownloadLink
           document={<InvoicePDF invoice={state} fiatMode={fiatMode} />}
-          fileName={`invoice-${state.invoiceNo || 'export'}.pdf`}
+          fileName={`invoice-${state.invoiceNo || "export"}.pdf`}
           className="hidden"
         >
           {({ blob, url, loading, error }) => {
@@ -123,20 +123,20 @@ export default function Editor(
 
             if (error) {
               cleanup();
-              toast('Failed to export PDF', { type: 'error' });
-              console.error('PDF generation error:', error);
+              toast("Failed to export PDF", { type: "error" });
+              console.error("PDF generation error:", error);
               return null;
             }
 
             if (url && blob) {
               // Create a direct download link
-              const downloadLink = window.document.createElement('a');
+              const downloadLink = window.document.createElement("a");
               downloadLink.href = url;
-              downloadLink.download = `invoice-${state.invoiceNo || 'export'}.pdf`;
+              downloadLink.download = `invoice-${state.invoiceNo || "export"}.pdf`;
               window.document.body.appendChild(downloadLink);
               downloadLink.click();
               window.document.body.removeChild(downloadLink);
-              
+
               // Cleanup after ensuring download has started
               setTimeout(cleanup, 100);
             }
@@ -145,9 +145,9 @@ export default function Editor(
         </PDFDownloadLink>
       );
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error("Error exporting PDF:", error);
       cleanup();
-      toast('Failed to export PDF', { type: 'error' });
+      toast("Failed to export PDF", { type: "error" });
     }
   };
 
@@ -161,7 +161,7 @@ export default function Editor(
         "http://localhost:5001/api/update-invoice-status",
         {
           invoiceNo: state.invoiceNo,
-        },
+        }
       );
       toast(response.data.message, {
         type: "success",
@@ -268,7 +268,7 @@ export default function Editor(
                 inputType="date"
                 onChange={(e) =>
                   dispatch(
-                    actions.editInvoice({ dateDelivered: e.target.value }),
+                    actions.editInvoice({ dateDelivered: e.target.value })
                   )
                 }
                 value={state.dateDelivered || state.dateIssued}
@@ -376,8 +376,10 @@ export default function Editor(
 
       {/* Add PDF Preview */}
       {/* <div className="mt-8 border border-gray-200 rounded-lg">
-        <h2 className="p-4 text-lg font-semibold border-b border-gray-200">PDF Preview</h2>
-        <PDFViewer style={{ width: '100%', height: '800px' }}>
+        <h2 className="p-4 text-lg font-semibold border-b border-gray-200">
+          PDF Preview
+        </h2>
+        <PDFViewer style={{ width: "100%", height: "800px" }}>
           <InvoicePDF invoice={state} fiatMode={fiatMode} />
         </PDFViewer>
       </div> */}

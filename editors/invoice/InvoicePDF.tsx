@@ -122,8 +122,10 @@ const styles = StyleSheet.create({
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
   const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = date.toLocaleString('default', { month: 'short' }).toUpperCase();
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = date
+    .toLocaleString("default", { month: "short" })
+    .toUpperCase();
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 };
@@ -150,12 +152,6 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({
           <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
             <Text style={[styles.title, { marginBottom: 0 }]}>Invoice</Text>
             <Text style={styles.invoiceNumber}>{invoice.invoiceNo}</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-            <Text style={[styles.title, { marginBottom: 0, fontSize: 10 }]}>
-              Currency:
-            </Text>
-            <Text style={styles.status}>{invoice.currency}</Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
             <Text style={[styles.title, { marginBottom: 0, fontSize: 10 }]}>
@@ -187,6 +183,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({
         {/* Payment Information */}
         <View style={styles.paymentSection}>
           <Text style={styles.paymentTitle}>Payment Information</Text>
+          <InvoiceField label="Currency" value={invoice.currency} />
           {fiatMode ? (
             <PaymentSectionFiat
               paymentRouting={invoice.issuer.paymentRouting}
