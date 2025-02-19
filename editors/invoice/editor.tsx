@@ -24,7 +24,7 @@ import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
 import { toast } from "@powerhousedao/design-system";
-import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { InvoicePDF } from "./InvoicePDF";
 import { createRoot } from "react-dom/client";
 
@@ -373,16 +373,6 @@ export default function Editor(
           )}
         </div>
       )}
-
-      {/* Add PDF Preview */}
-      {/* <div className="mt-8 border border-gray-200 rounded-lg">
-        <h2 className="p-4 text-lg font-semibold border-b border-gray-200">
-          PDF Preview
-        </h2>
-        <PDFViewer style={{ width: "100%", height: "800px" }}>
-          <InvoicePDF invoice={state} fiatMode={fiatMode} />
-        </PDFViewer>
-      </div> */}
     </div>
   );
 }
