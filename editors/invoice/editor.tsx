@@ -20,6 +20,7 @@ import { DateTimeLocalInput } from "./dateTimeLocalInput";
 import { LegalEntityForm } from "./legalEntity/legalEntity";
 import { LineItemsTable } from "./lineItems";
 import { loadUBLFile } from "./ingestUBL";
+import PDFUploader from "./ingestPDF";
 import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
@@ -140,6 +141,9 @@ export default function Editor(
               type="file"
             />
           </label>
+            <PDFUploader
+            dispatch={dispatch} 
+            />
         </div>
 
         {/* Toggle between upload and status */}

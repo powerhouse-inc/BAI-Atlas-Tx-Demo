@@ -1,12 +1,40 @@
+//Create neww route that goes to 
+
 import express from 'express';
 import axios from 'axios';
 import { executeTokenTransfer, checkTransactionExecuted } from './gnosisTransactionBuilder'
 import { updateInvoiceStatus } from '../../scripts/invoice/main';
+import { uploadPdfAndGetJson } from '../utils/pdfToDocumentAi';
 
 const router = express.Router();
 
+// Move these lines before any route definitions
+router.use(express.json({limit: '1mb'}));
+router.use(express.urlencoded({limit: '1mb', extended: true}));
+
 const API_URL = 'https://api.request.finance/invoices';
 const API_KEY = process.env.REQUEST_FINANCE_API_KEY; // Store in .env file
+
+router.post('/pdf-upload', async (req, res) => {
+    try {
+        console.log("Received PDF upload request");
+        const pdfData = req.body.pdfData;
+        if (!pdfData) {
+            console.log("No PDF data provided");
+            return res.status(400).json({ error: 'No PDF data provided' });
+        }
+        console.log("Calling uploadPdfAndGetJson...");
+        const result = await uploadPdfAndGetJson(pdfData);
+        console.log("Processing complete, sending response");
+        res.json(result);
+    } catch (error: any) {
+        console.error('Error processing PDF:', error);
+        res.status(500).json({ 
+            error: 'Failed to process PDF',
+            message: error.message 
+        });
+    }
+});
 
 router.post('/create-invoice', async (req, res) => {
     console.log('Getting a request to create an invoice', req.body);
