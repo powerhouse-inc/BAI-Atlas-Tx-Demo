@@ -262,6 +262,10 @@ const InvoiceSection: React.FC<{ title: string; data: any }> = ({
       <InvoiceField label="Due Date" value={formatDate(data.dateDue)} />
     )}
     <InvoiceField label="Name" value={data.name} />
+    <InvoiceField 
+      label={data.id?.taxId ? "Tax ID" : data.id?.corpRegId ? "Corp. Reg" : ""} 
+      value={data.id?.taxId || data.id?.corpRegId || ""} 
+    />
     <InvoiceField label="Address" value={data.address?.streetAddress || ""} />
     <InvoiceField label="City" value={data.address?.city || ""} />
     <InvoiceField label="Country" value={data.address?.country || ""} />
