@@ -74,38 +74,53 @@ export async function uploadPdfAndGetJson(inputDoc: any) {
 }
 
 function parseDate(dateStr: string): string {
-    // Remove any leading/trailing whitespace
-    dateStr = dateStr.trim();
-    
-    // Try different date formats
-    let date: Date | null = null;
-    
-    // Handle YYYY-MM-DD format
-    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        date = new Date(dateStr);
-    }
-    // Handle DD-MMM-YYYY format (e.g., "12-Mar-2025")
-    else if (dateStr.match(/^\d{1,2}-[A-Za-z]{3}-\d{4}$/)) {
-        const [day, month, year] = dateStr.split('-');
-        const monthMap: {[key: string]: string} = {
-            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-            'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-            'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-        };
-        date = new Date(`${year}-${monthMap[month]}-${day.padStart(2, '0')}`);
-    }
-    // Handle MM/DD/YYYY format
-    else if (dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
-        const [month, day, year] = dateStr.split('/');
-        date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
-    }
-    
-    if (!date || isNaN(date.getTime())) {
+    try {
+        // Remove any leading/trailing whitespace and convert to uppercase for consistency
+        dateStr = dateStr.trim().toUpperCase();
+        
+        let date: Date | null = null;
+        
+        // Handle YYYY-MM-DD format
+        if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            date = new Date(dateStr);
+        }
+        // Handle DD/MMM/YYYY format (e.g., "02/JAN/2025")
+        else if (dateStr.match(/^\d{1,2}\/[A-Z]{3}\/\d{4}$/)) {
+            const [day, month, year] = dateStr.split('/');
+            const monthMap: {[key: string]: string} = {
+                'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04',
+                'MAY': '05', 'JUN': '06', 'JUL': '07', 'AUG': '08',
+                'SEP': '09', 'OCT': '10', 'NOV': '11', 'DEC': '12'
+            };
+            date = new Date(`${year}-${monthMap[month]}-${day.padStart(2, '0')}`);
+        }
+        // Handle DD-MMM-YYYY format (e.g., "02-JAN-2025")
+        else if (dateStr.match(/^\d{1,2}-[A-Z]{3}-\d{4}$/)) {
+            const [day, month, year] = dateStr.split('-');
+            const monthMap: {[key: string]: string} = {
+                'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04',
+                'MAY': '05', 'JUN': '06', 'JUL': '07', 'AUG': '08',
+                'SEP': '09', 'OCT': '10', 'NOV': '11', 'DEC': '12'
+            };
+            date = new Date(`${year}-${monthMap[month]}-${day.padStart(2, '0')}`);
+        }
+        // Handle MM/DD/YYYY format
+        else if (dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+            const [month, day, year] = dateStr.split('/');
+            date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        }
+        
+        if (!date || isNaN(date.getTime())) {
+            console.error(`Failed to parse date: ${dateStr}`);
+            throw new Error(`Invalid date format: ${dateStr}`);
+        }
+        
+        // Return in YYYY-MM-DD format
+        return date.toISOString().split('T')[0];
+    } catch (error) {
+        console.error(`Error parsing date '${dateStr}':`, error);
         throw new Error(`Invalid date format: ${dateStr}`);
     }
-    
-    // Return in YYYY-MM-DD format
-    return date.toISOString().split('T')[0];
 }
 
 function convertCurrencySymbolToCode(symbol: string): string {
@@ -160,25 +175,7 @@ function mapDocumentAiToInvoice(
     // Initialize issuer's payment routing if it doesn't exist
     if (!invoiceData.issuer!.paymentRouting) {
         invoiceData.issuer!.paymentRouting = {
-            bank: {
-                name: "Bank of America",
-                address: {
-                    streetAddress: null,
-                    city: null,
-                    stateProvince: null,
-                    postalCode: null,
-                    country: null,
-                    extendedAddress: null
-                },
-                accountNum: "11111111111111111111",
-                ABA: null,
-                BIC: null,
-                SWIFT: null,
-                accountType: null,
-                beneficiary: null,
-                intermediaryBank: null,
-                memo: null
-            },
+            bank: null,
             wallet: null
         };
     }
@@ -223,10 +220,11 @@ function mapDocumentAiToInvoice(
                 
                 let city = '', stateProvince = '', postalCode = '', country = '';
                 if (addressLines[1]) {
-                    const matches = addressLines[1].match(/(\d{4})\s+([^,]+)/);
-                    if (matches) {
-                        postalCode = matches[1];
-                        city = matches[2].trim();
+                    const cityStateMatch = addressLines[1].match(/([^,]+),\s*(\w+)\s+(\d+)/);
+                    if (cityStateMatch) {
+                        city = cityStateMatch[1].trim();
+                        stateProvince = cityStateMatch[2].trim();
+                        postalCode = cityStateMatch[3].trim();
                     }
                 }
                 if (addressLines[2]) {
@@ -241,6 +239,7 @@ function mapDocumentAiToInvoice(
                     country,
                     extendedAddress: null
                 };
+                invoiceData.issuer!.country = country;
                 break;
 
             case 'supplier_tax_id':
@@ -257,87 +256,48 @@ function mapDocumentAiToInvoice(
                 break;
             
             case 'line_item':
+                const quantity = entity.children?.find(child => 
+                    child.type === 'line_item/quantity'
+                )?.mentionText || '1';
+                
+                const unitPrice = entity.children?.find(child => 
+                    child.type === 'line_item/unit_price'
+                )?.mentionText || '0';
+
+                const parsedQuantity = parseFloat(quantity.replace(/,/g, ''));
+                const parsedUnitPrice = parseFloat(unitPrice.replace(/,/g, ''));
+                
                 const description = entity.children?.find(child => 
                     child.type === 'line_item/description'
                 )?.mentionText || '';
                 
-                const amount = entity.children?.find(child => 
-                    child.type === 'line_item/amount'
-                )?.mentionText || '';
-
-                const baseAmount = parseFloat(amount.replace(',', '')) || 0;
-                const taxRate = 0;  // assuming no tax for now
-                
                 invoiceData.lineItems = invoiceData.lineItems || [];
                 invoiceData.lineItems.push({
                     description,
-                    quantity: 1,
-                    unitPriceTaxExcl: baseAmount,
-                    unitPriceTaxIncl: baseAmount * (1 + taxRate),
-                    totalPriceTaxExcl: baseAmount,
-                    totalPriceTaxIncl: baseAmount * (1 + taxRate),
-                    currency: convertCurrencySymbolToCode(invoiceData.currency || 'USD'),
+                    quantity: parsedQuantity,
+                    unitPriceTaxExcl: parsedUnitPrice,
+                    unitPriceTaxIncl: parsedUnitPrice,
+                    totalPriceTaxExcl: parsedQuantity * parsedUnitPrice,
+                    totalPriceTaxIncl: parsedQuantity * parsedUnitPrice,
+                    currency: invoiceData.currency || 'USD',
                     id: crypto.randomUUID(),
-                    taxPercent: taxRate * 100
+                    taxPercent: 0
                 });
                 break;
 
-            case 'receiver_name':
-                invoiceData.payer!.name = entity.mentionText;
-                break;
-            
-            case 'receiver_tax_id':
-                invoiceData.payer!.id = {
-                    taxId: entity.mentionText
-                };
-                break;
-
-            case 'receiver_address':
-                const payerAddressLines = entity.mentionText.split('\n');
-                const payerStreetAddress = payerAddressLines[0];
-                
-                let payerCity = '', payerPostalCode = '', payerCountry = '';
-                if (payerAddressLines[1]) {
-                    const matches = payerAddressLines[1].match(/(\d{4})\s+([^,]+)/);
-                    if (matches) {
-                        payerPostalCode = matches[1];
-                        payerCity = matches[2].trim();
-                    }
-                }
-                if (payerAddressLines[2]) {
-                    payerCountry = payerAddressLines[2].trim();
-                }
-
-                invoiceData.payer!.address = {
-                    streetAddress: payerStreetAddress,
-                    city: payerCity,
-                    postalCode: payerPostalCode,
-                    country: payerCountry,
-                    stateProvince: null,
-                    extendedAddress: null
-                };
-                break;
-
-            case 'receiver_email':
-                if (!invoiceData.payer!.contactInfo) {
-                    invoiceData.payer!.contactInfo = { email: null, tel: null };
-                }
-                invoiceData.payer!.contactInfo.email = entity.mentionText;
-                break;
-
             case 'supplier_iban':
-                if (!invoiceData.issuer!.paymentRouting!.bank) {
-                    invoiceData.issuer!.paymentRouting!.bank = {
-                        name: "N/A",
+                if (!invoiceData.issuer!.paymentRouting?.wallet) {
+                    const existingBank = invoiceData.issuer!.paymentRouting?.bank || {
+                        name: "",
                         address: {
-                            streetAddress: null,
-                            city: null,
-                            stateProvince: null,
-                            postalCode: null,
-                            country: null,
-                            extendedAddress: null
+                            streetAddress: "",
+                            city: "",
+                            stateProvince: "",
+                            postalCode: "",
+                            country: "",   
+                            extendedAddress: ""
                         },
-                        accountNum: entity.mentionText,
+                        accountNum: "",
                         ABA: null,
                         BIC: null,
                         SWIFT: null,
@@ -346,8 +306,153 @@ function mapDocumentAiToInvoice(
                         intermediaryBank: null,
                         memo: null
                     };
+
+                    invoiceData.issuer!.paymentRouting = {
+                        ...invoiceData.issuer!.paymentRouting,
+                        bank: {
+                            ...existingBank,
+                            accountNum: entity.mentionText
+                        },
+                        wallet: null
+                    };
+                }
+                break;
+
+            case 'crypto_account_details':
+                // Initialize wallet object if it doesn't exist
+                if (!invoiceData.issuer!.paymentRouting) {
+                    invoiceData.issuer!.paymentRouting = {
+                        bank: null,
+                        wallet: {
+                            address: null,
+                            chainId: null,
+                            chainName: null,
+                            rpc: null
+                        }
+                    };
+                } else if (!invoiceData.issuer!.paymentRouting.wallet) {
+                    invoiceData.issuer!.paymentRouting.wallet = {
+                        address: null,
+                        chainId: null,
+                        chainName: null,
+                        rpc: null
+                    };
+                }
+
+                // Process child entities
+                entity.children?.forEach(child => {
+                    switch(child.type) {
+                        case 'crypto_account_details/account_address':
+                            invoiceData.issuer!.paymentRouting!.wallet!.address = child.mentionText;
+                            break;
+                        case 'crypto_account_details/chain_name':
+                            invoiceData.issuer!.paymentRouting!.wallet!.chainName = child.mentionText;
+                            break;
+                        case 'crypto_account_details/chain_id':
+                            invoiceData.issuer!.paymentRouting!.wallet!.chainId = child.mentionText;
+                            break;
+                    }
+                });
+                break;
+
+            case 'payer_name':
+                if (!invoiceData.payer) {
+                    invoiceData.payer = {
+                        name: entity.mentionText,
+                        address: null,
+                        contactInfo: { email: null, tel: null },
+                        country: null,
+                        id: null,
+                        paymentRouting: null
+                    };
                 } else {
-                    invoiceData.issuer!.paymentRouting!.bank.accountNum = entity.mentionText;
+                    invoiceData.payer.name = entity.mentionText;
+                }
+                break;
+
+            case 'payer_address':
+                const payerAddressLines = entity.mentionText.split('\n');
+                
+                // Initialize variables
+                let payerStreetAddress = '';
+                let payerExtendedAddress = '';
+                let payerCity = '';
+                let payerPostalCode = '';
+                let payerCountry = '';
+                let payerStateProvince = '';
+
+                // Handle the specific format:
+                // "The North Atrium\n3rd Floor, unit 02.\nAS. Fortuna Streets/MC.Briones Sts. Guizo\nMandaue City 6014 Cebu Philippines"
+                if (payerAddressLines.length > 0) {
+                    payerStreetAddress = payerAddressLines[0]; // "The North Atrium"
+                    
+                    if (payerAddressLines[1]) {
+                        payerExtendedAddress = payerAddressLines[1]; // "3rd Floor, unit 02."
+                    }
+
+                    if (payerAddressLines[2]) {
+                        payerStateProvince = payerAddressLines[2]; // "AS. Fortuna Streets/MC.Briones Sts. Guizo"
+                    }
+
+                    if (payerAddressLines[3]) {
+                        // Parse "Mandaue City 6014 Cebu Philippines"
+                        const lastLine = payerAddressLines[3];
+                        const cityMatch = lastLine.match(/^(.*?)\s+(\d{4})\s+(.*)$/);
+                        if (cityMatch) {
+                            payerCity = cityMatch[1];         // "Mandaue City"
+                            payerPostalCode = cityMatch[2];   // "6014"
+                            payerCountry = cityMatch[3];      // "Cebu Philippines"
+                        } else {
+                            // Fallback if the pattern doesn't match
+                            payerCity = lastLine;
+                        }
+                    }
+                }
+
+                invoiceData.payer!.address = {
+                    streetAddress: payerStreetAddress,
+                    extendedAddress: payerExtendedAddress,
+                    city: payerCity,
+                    postalCode: payerPostalCode,
+                    country: payerCountry,
+                    stateProvince: payerStateProvince
+                };
+                invoiceData.payer!.country = payerCountry;
+                break;
+            
+            case 'payer_email':
+                if (!invoiceData.payer!.contactInfo) {
+                    invoiceData.payer!.contactInfo = { email: null, tel: null };
+                }
+                invoiceData.payer!.contactInfo.email = entity.mentionText;
+                break;
+
+            case 'payer_tax_id':
+                if (!invoiceData.payer!.id) {
+                    invoiceData.payer!.id = {
+                        taxId: entity.mentionText
+                    };
+                } else {
+                    invoiceData.payer!.id = {
+                        taxId: entity.mentionText
+                    };
+                }
+                break;
+
+            case 'total_amount':
+                const totalAmount = parseFloat(entity.mentionText.replace(/,/g, ''));
+                invoiceData.totalPriceTaxExcl = totalAmount;
+                invoiceData.totalPriceTaxIncl = totalAmount; // Assuming no tax for now
+                break;
+
+            case 'vat':
+                const taxRate = parseFloat(entity.mentionText) || 0;
+                // Apply tax rate to line items
+                if (invoiceData.lineItems) {
+                    invoiceData.lineItems = invoiceData.lineItems.map(item => ({
+                        ...item,
+                        taxPercent: taxRate
+                    }));
                 }
                 break;
         }
@@ -355,17 +460,3 @@ function mapDocumentAiToInvoice(
 
     return invoiceData;
 }
-
-/*// Example usage
-(async () => {
-    const projectId = '980330048014';
-    const location = 'us';  // or your specific location
-    const processorId = 'd54517bef7b04930';
-    const filePath = '/Users/teepteep/Documents/Work/BuilderShowcase/InvoiceFlow/documentAi/Invoices/invoice_55.pdf';
-
-    const { usefulData } = await uploadPdfAndGetJson(projectId, location, processorId, filePath);
-    console.log(usefulData);
-
-   
-    });
-})()*/

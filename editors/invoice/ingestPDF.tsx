@@ -83,7 +83,7 @@ export default function PDFUploader({ dispatch }: PDFUploaderProps) {
             if (invoiceData.issuer) {
                 dispatch(
                     actions.editIssuer({
-                        name: invoiceData.issuer.name,
+                        name: invoiceData.issuer.name || "",
                         country: invoiceData.issuer.country || "",
                         streetAddress: invoiceData.issuer.address?.streetAddress || "",
                         extendedAddress: invoiceData.issuer.address?.extendedAddress || "",
@@ -92,6 +92,7 @@ export default function PDFUploader({ dispatch }: PDFUploaderProps) {
                         stateProvince: invoiceData.issuer.address?.stateProvince || "",
                         tel: invoiceData.issuer.contactInfo?.tel || "",
                         email: invoiceData.issuer.contactInfo?.email || "",
+                        id: invoiceData.issuer.id?.taxId || ""
                     })
                 );
 
@@ -107,6 +108,64 @@ export default function PDFUploader({ dispatch }: PDFUploaderProps) {
                             accountType: invoiceData.issuer.paymentRouting.bank.accountType || 'CHECKING',
                             beneficiary: invoiceData.issuer.paymentRouting.bank.beneficiary || "",
                             memo: invoiceData.issuer.paymentRouting.bank.memo || "",
+                        })
+                    );
+                }
+
+                // Add crypto wallet information dispatch
+                if (invoiceData.issuer.paymentRouting?.wallet) {
+                    dispatch(
+                        actions.editIssuerWallet({
+                            address: invoiceData.issuer.paymentRouting.wallet.address || "",
+                            chainId: invoiceData.issuer.paymentRouting.wallet.chainId || "",
+                            chainName: invoiceData.issuer.paymentRouting.wallet.chainName || "",
+                            rpc: invoiceData.issuer.paymentRouting.wallet.rpc || ""
+                        })
+                    );
+                }
+            }
+
+            // If we have payer data, dispatch it
+            if (invoiceData.payer) {
+                dispatch(
+                    actions.editPayer({
+                        name: invoiceData.payer.name || "",
+                        country: invoiceData.payer.country || "",
+                        streetAddress: invoiceData.payer.address?.streetAddress || "",
+                        extendedAddress: invoiceData.payer.address?.extendedAddress || "",
+                        city: invoiceData.payer.address?.city || "",
+                        postalCode: invoiceData.payer.address?.postalCode || "",
+                        stateProvince: invoiceData.payer.address?.stateProvince || "",
+                        tel: invoiceData.payer.contactInfo?.tel || "",
+                        email: invoiceData.payer.contactInfo?.email || "",
+                        id: invoiceData.payer.id?.taxId || ""
+                    })
+                );
+
+                // Add payer bank information if present
+                if (invoiceData.payer.paymentRouting?.bank) {
+                    dispatch(
+                        actions.editPayerBank({
+                            name: invoiceData.payer.paymentRouting.bank.name || "",
+                            accountNum: invoiceData.payer.paymentRouting.bank.accountNum || "",
+                            ABA: invoiceData.payer.paymentRouting.bank.ABA || "",
+                            BIC: invoiceData.payer.paymentRouting.bank.BIC || "",
+                            SWIFT: invoiceData.payer.paymentRouting.bank.SWIFT || "",
+                            accountType: invoiceData.payer.paymentRouting.bank.accountType || 'CHECKING',
+                            beneficiary: invoiceData.payer.paymentRouting.bank.beneficiary || "",
+                            memo: invoiceData.payer.paymentRouting.bank.memo || "",
+                        })
+                    );
+                }
+
+                // Add payer crypto wallet information if present
+                if (invoiceData.payer.paymentRouting?.wallet) {
+                    dispatch(
+                        actions.editPayerWallet({
+                            address: invoiceData.payer.paymentRouting.wallet.address || "",
+                            chainId: invoiceData.payer.paymentRouting.wallet.chainId || "",
+                            chainName: invoiceData.payer.paymentRouting.wallet.chainName || "",
+                            rpc: invoiceData.payer.paymentRouting.wallet.rpc || ""
                         })
                     );
                 }

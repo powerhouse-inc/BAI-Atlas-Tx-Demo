@@ -40,6 +40,11 @@ export default function Editor(
 
   const [fiatMode, setFiatMode] = useState(state.currency != "USDS");
 
+  // Add this useEffect to watch for currency changes
+  useEffect(() => {
+    setFiatMode(state.currency !== "USDS");
+  }, [state.currency]);
+
   const itemsTotalTaxExcl = useMemo(() => {
     return state.lineItems.reduce((total, lineItem) => {
       return total + lineItem.quantity * lineItem.unitPriceTaxExcl;
