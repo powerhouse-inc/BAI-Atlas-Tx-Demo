@@ -16,7 +16,7 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
   useEffect(() => {
     if (safeTxHash) {
       const eventSource = new EventSource(
-        `http://localhost:5001/api/transaction-status/${safeTxHash}/${docState.invoiceNo}`
+        `http://localhost:5001/api/transaction-status/${safeTxHash}/${docState.invoiceNo}`,
       );
 
       eventSource.onmessage = (event) => {
@@ -126,7 +126,7 @@ const InvoiceToGnosis: React.FC<InvoiceToGnosisProps> = ({ docState }) => {
         "http://localhost:5001/api/update-invoice-status",
         {
           invoiceNo: docState.invoiceNo,
-        }
+        },
       );
       console.log("Response: ", response.data.message);
       setInvoiceStatusResponse(response.data.message);

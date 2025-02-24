@@ -19,11 +19,19 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
 
     const bankDetails = {
       currency: docState.currency || "EUR",
-      accountNumber: docState.issuer.paymentRouting.bank.accountNum || "DE89300500000132013000", // the IBAN
-      country: docState.issuer.paymentRouting.bank.address.country.toUpperCase() || "DE",
+      accountNumber:
+        docState.issuer.paymentRouting.bank.accountNum ||
+        "DE89300500000132013000", // the IBAN
+      country:
+        docState.issuer.paymentRouting.bank.address.country.toUpperCase() ||
+        "DE",
       bankName: docState.issuer.paymentRouting.bank.name || "GmbH Bank Name",
-      firstName: docState.issuer.paymentRouting.bank.beneficiary || "Liberuum",
-      lastName: "Liberty",
+      firstName:
+        docState.issuer.paymentRouting.bank.beneficiary.split(" ")[0] ||
+        "Liberuum",
+      lastName:
+        docState.issuer.paymentRouting.bank.beneficiary.split(" ")[1] ||
+        "Liberty",
       bicSwift: docState.issuer.paymentRouting.bank.BIC || "GMBHDEFFXXX",
     };
 
@@ -58,7 +66,9 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
             lastName: "Liberty",
           },
           sellerInfo: {
-            email: docState.issuer.contactInfo.email ||	 "contributor@contributor.com",
+            email:
+              docState.issuer.contactInfo.email ||
+              "contributor@contributor.com",
             firstName: docState.issuer.name || "place holder name",
             // lastName: docState.issuer.name || "contributor",
           },
@@ -81,7 +91,7 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
               },
             },
           ],
-        }
+        },
       );
 
       console.log("Invoice created successfully:", response.data);
@@ -91,7 +101,11 @@ const RequestFinance: React.FC<RequestFinanceProps> = ({ docState }) => {
         setInvoiceLink(response.data.invoiceLinks.pay);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.response.data.errors[0] : "An error occurred");
+      setError(
+        err instanceof Error
+          ? err.response.data.errors[0]
+          : "An error occurred",
+      );
     } finally {
       setIsLoading(false);
     }

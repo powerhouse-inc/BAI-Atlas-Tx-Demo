@@ -24,6 +24,9 @@ import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
 import { toast } from "@powerhousedao/design-system";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { InvoicePDF } from "./InvoicePDF";
+import { createRoot } from "react-dom/client";
 
 import Toggle from "react-toggle";
 import "./toggle.css";
@@ -34,8 +37,8 @@ export default function Editor(
   // generate a random id
   // const id = documentModelUtils.hashKey();
 
-  const { document, dispatch } = props;
-  const state = document.state.global;
+  const { document: doc, dispatch } = props;
+  const state = doc.state.global;
 
   const [fiatMode, setFiatMode] = useState(state.currency != "USDS");
 
@@ -91,6 +94,63 @@ export default function Editor(
     }
   };
 
+  const handleExportPDF = () => {
+    // Create a temporary container for the PDFDownloadLink
+    const container = window.document.createElement("div");
+    container.style.display = "none";
+    window.document.body.appendChild(container);
+
+    // Create root for React 18
+    const root = createRoot(container);
+
+    // Render the PDFDownloadLink
+    const cleanup = () => {
+      root.unmount();
+      window.document.body.removeChild(container);
+    };
+
+    try {
+      root.render(
+        <PDFDownloadLink
+          document={<InvoicePDF invoice={state} fiatMode={fiatMode} />}
+          fileName={`invoice-${state.invoiceNo || "export"}.pdf`}
+          className="hidden"
+        >
+          {({ blob, url, loading, error }) => {
+            if (loading) {
+              return null;
+            }
+
+            if (error) {
+              cleanup();
+              toast("Failed to export PDF", { type: "error" });
+              console.error("PDF generation error:", error);
+              return null;
+            }
+
+            if (url && blob) {
+              // Create a direct download link
+              const downloadLink = window.document.createElement("a");
+              downloadLink.href = url;
+              downloadLink.download = `invoice-${state.invoiceNo || "export"}.pdf`;
+              window.document.body.appendChild(downloadLink);
+              downloadLink.click();
+              window.document.body.removeChild(downloadLink);
+
+              // Cleanup after ensuring download has started
+              setTimeout(cleanup, 100);
+            }
+            return null;
+          }}
+        </PDFDownloadLink>,
+      );
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      cleanup();
+      toast("Failed to export PDF", { type: "error" });
+    }
+  };
+
   const handleReset = () => {
     dispatch(actions.editStatus({ status: "DRAFT" }));
   };
@@ -140,6 +200,13 @@ export default function Editor(
               type="file"
             />
           </label>
+          <button
+            onClick={handleExportPDF}
+            style={{ backgroundColor: "#000" }}
+            className="inline-flex cursor-pointer items-center rounded px-4 py-2 text-white hover:bg-gray-800 whitespace-nowrap"
+          >
+            Export PDF
+          </button>
         </div>
 
         {/* Toggle between upload and status */}

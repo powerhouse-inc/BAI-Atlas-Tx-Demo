@@ -9,7 +9,7 @@ const API_URL = 'https://api.request.finance/invoices';
 const API_KEY = process.env.REQUEST_FINANCE_API_KEY; // Store in .env file
 
 router.post('/create-invoice', async (req, res) => {
-    console.log('Getting a request to create an invoice');
+    console.log('Getting a request to create an invoice', req.body);
     try {
         // First API call to create the invoice
         const response = await axios.post(API_URL, req.body, {
@@ -67,7 +67,7 @@ router.post('/transfer', async (req, res) => {
         const { payerWallet, paymentDetails, invoiceNo } = req.body;
         const result = await executeTokenTransfer(payerWallet, paymentDetails);
         res.json(result);
-        await checkTransactionExecuted(result.txHash.safeTxHash, invoiceNo);
+        // await checkTransactionExecuted(result.txHash.safeTxHash, invoiceNo);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
@@ -104,8 +104,8 @@ router.get('/transaction-status/:safeTxHash/:invoiceNo', (req, res) => {
                 clearInterval(intervalId);
                 res.end();
             }
-        } catch (error) {
-            console.error('Error fetching transaction details:', error);
+        } catch (error: any) {
+            console.error('Error updating invoice status');
             clearInterval(intervalId);
             res.end();
         }

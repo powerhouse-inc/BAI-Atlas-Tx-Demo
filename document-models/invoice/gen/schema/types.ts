@@ -263,6 +263,13 @@ export type InvoiceState = {
   totalPriceTaxIncl: Scalars["Float"]["output"];
 };
 
+export type InvoiceWallet = {
+  address: Maybe<Scalars["String"]["output"]>;
+  chainId: Maybe<Scalars["String"]["output"]>;
+  chainName: Maybe<Scalars["String"]["output"]>;
+  rpc: Maybe<Scalars["String"]["output"]>;
+};
+
 export type LegalEntity = {
   address: Maybe<Address>;
   contactInfo: Maybe<ContactInfo>;
@@ -286,7 +293,7 @@ export type LegalEntityTaxId = {
 
 export type PaymentRouting = {
   bank: Maybe<Bank>;
-  wallet: Maybe<Wallet>;
+  wallet: Maybe<InvoiceWallet>;
 };
 
 export type Ref = {
@@ -302,11 +309,4 @@ export type Token = {
   evmAddress: Maybe<Scalars["String"]["output"]>;
   rpc: Maybe<Scalars["String"]["output"]>;
   symbol: Maybe<Scalars["String"]["output"]>;
-};
-
-export type Wallet = {
-  address: Maybe<Scalars["String"]["output"]>;
-  chainId: Maybe<Scalars["String"]["output"]>;
-  chainName: Maybe<Scalars["String"]["output"]>;
-  rpc: Maybe<Scalars["String"]["output"]>;
 };

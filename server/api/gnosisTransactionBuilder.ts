@@ -154,7 +154,7 @@ export async function checkTransactionExecuted(generatedsafeTxHash: string, invo
             return false; // Transaction is still pending
         }
     } catch (error) {
-        console.error('Error fetching transaction details:', error);
+        console.error('Error fetching transaction details from gnosis:', error);
         throw error;
     }
 }
