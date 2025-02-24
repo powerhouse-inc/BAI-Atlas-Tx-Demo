@@ -4,17 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   InvoiceState,
   InvoiceAction,
-  InvoiceLineItem,
   InvoiceLocalState,
   actions,
-  EditIssuerInput,
-  EditIssuerBankInput,
-  EditPayerInput,
-  DeleteLineItemInput,
   Status,
-  EditStatusInput,
-  EditInvoiceInput,
-  EditIssuerWalletInput,
 } from "../../document-models/invoice";
 import { DateTimeLocalInput } from "./dateTimeLocalInput";
 import { LegalEntityForm } from "./legalEntity/legalEntity";
@@ -30,6 +22,7 @@ import { createRoot } from "react-dom/client";
 
 import Toggle from "react-toggle";
 import "./toggle.css";
+import { downloadUBL, exportToUBL } from "./exportUBL";
 
 export default function Editor(
   props: EditorProps<InvoiceState, InvoiceAction, InvoiceLocalState>,
@@ -172,6 +165,18 @@ export default function Editor(
     }
   };
 
+  async function handleExportUBL() {
+    try {
+      // Generate filename based on invoice number
+      const filename = `invoice_${state.invoiceNo || "export"}.xml`;
+
+      return await downloadUBL({ invoice: state, filename });
+    } catch (error) {
+      console.error("Error exporting to UBL:", error);
+      throw error;
+    }
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       {/* Header Section */}
@@ -201,6 +206,13 @@ export default function Editor(
             />
           </label>
           <button
+            onClick={handleExportUBL}
+            style={{ backgroundColor: "#000" }}
+            className="inline-flex cursor-pointer items-center rounded px-4 py-2 text-white hover:bg-gray-800 whitespace-nowrap"
+          >
+            Export UBL
+          </button>
+          <button
             onClick={handleExportPDF}
             style={{ backgroundColor: "#000" }}
             className="inline-flex cursor-pointer items-center rounded px-4 py-2 text-white hover:bg-gray-800 whitespace-nowrap"
@@ -209,23 +221,46 @@ export default function Editor(
           </button>
         </div>
 
-        {/* Toggle between upload and status */}
+        {/* Toggle between upload and status
+        // <div className="flex items-center gap-2">
+        //   <span
+        //     className={`text-sm font-medium ${!fiatMode ? "text-purple-600" : "text-gray-500"}`}
+        //   >
+        //     Crypto
+        //   </span>
+        //   <Toggle
+        //     checked={fiatMode}
+        //     onChange={() => setFiatMode(!fiatMode)}
+        //     icons={false}
+        //   />
+        //   <span
+        //     className={`text-sm font-medium ${fiatMode ? "text-green-600" : "text-gray-500"}`}
+        //   >
+        //     Fiat
+        //   </span>
+        // </div> */}
+
         <div className="flex items-center gap-2">
-          <span
-            className={`text-sm font-medium ${!fiatMode ? "text-purple-600" : "text-gray-500"}`}
+          <select
+            id="currency"
+            className="rounded border border-gray-200 px-2 py-1"
+            value={state.currency}
+            onChange={(e) => {
+              const input = {
+                currency: e.target.value,
+              };
+              setFiatMode(input.currency !== "USDS");
+              dispatch(actions.editInvoice(input));
+            }}
           >
-            Crypto
-          </span>
-          <Toggle
-            checked={fiatMode}
-            onChange={() => setFiatMode(!fiatMode)}
-            icons={false}
-          />
-          <span
-            className={`text-sm font-medium ${fiatMode ? "text-green-600" : "text-gray-500"}`}
-          >
-            Fiat
-          </span>
+            <option value="USD">USD</option>
+            <option value="USDS">USDS</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="JPY">JPY</option>
+            <option value="CNY">CNY</option>
+            <option value="CHF">CHF</option>
+          </select>
         </div>
 
         {/* Status on the right */}
@@ -350,24 +385,7 @@ export default function Editor(
       {state.status === "ACCEPTED" && (
         <div className="mt-8">
           {state.currency === "USDS" ? (
-            state.issuer.paymentRouting?.wallet?.chainName === "base" ? (
-              <InvoiceToGnosis docState={state} />
-            ) : (
-              <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                <div className="bg-red-500 text-white p-8 rounded-lg shadow-xl relative max-w-md">
-                  <button
-                    className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
-                    onClick={() =>
-                      dispatch(actions.editStatus({ status: "DRAFT" }))
-                    }
-                  >
-                    <span className="text-2xl">&times;</span>
-                  </button>
-                  <h1 className="text-xl font-semibold mb-2">Error</h1>
-                  <p>Please use 'base' chain name instead</p>
-                </div>
-              </div>
-            )
+            <InvoiceToGnosis docState={state} />
           ) : (
             <RequestFinance docState={state} />
           )}

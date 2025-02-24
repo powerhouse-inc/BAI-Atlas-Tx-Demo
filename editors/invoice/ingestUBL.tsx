@@ -86,23 +86,6 @@ export class UBLConverter {
           ),
       }),
     );
-
-    //   // Process document references
-    //   const refs = invoice.querySelectorAll(
-    //     "AdditionalDocumentReference, cac\\:AdditionalDocumentReference",
-    //   );
-    //   refs.forEach((ref) => {
-    //     this.dispatch(
-    //       actions.addRef({
-    //         id: this.getElementText(ref, "ID, cbc\\:ID"),
-    //         value:
-    //           this.getElementText(
-    //             ref,
-    //             "DocumentDescription, cbc\\:DocumentDescription",
-    //           ) || this.getElementText(ref, "ID, cbc\\:ID"),
-    //       }),
-    //     );
-    //   });
   }
 
   private processParties(invoice: Element) {
