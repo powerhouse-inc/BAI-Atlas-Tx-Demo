@@ -1,6 +1,6 @@
 import { Action, EditorProps } from "document-model/document";
 import { utils as documentModelUtils } from "document-model/document";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   InvoiceState,
   InvoiceAction,
@@ -20,7 +20,7 @@ import { DateTimeLocalInput } from "./dateTimeLocalInput";
 import { LegalEntityForm } from "./legalEntity/legalEntity";
 import { LineItemsTable } from "./lineItems";
 import { loadUBLFile } from "./ingestUBL";
-import PDFUploader from "./ingestPDF";
+import PDFUploader, { loadPDFFile } from "./ingestPDF";
 import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
@@ -42,11 +42,28 @@ export default function Editor(
   const state = doc.state.global;
 
   const [fiatMode, setFiatMode] = useState(state.currency != "USDS");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   // Add this useEffect to watch for currency changes
   useEffect(() => {
     setFiatMode(state.currency !== "USDS");
   }, [state.currency]);
+
+  // Add click outside listener to close dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const itemsTotalTaxExcl = useMemo(() => {
     return state.lineItems.reduce((total, lineItem) => {
@@ -97,6 +114,20 @@ export default function Editor(
     } catch (error) {
       // Handle error presentation to user
       console.error("Failed to load UBL file:", error);
+    }
+  };
+
+  const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsPdfLoading(true);
+    try {
+      await loadPDFFile({ file, dispatch });
+    } catch (error) {
+      console.error("Error handling PDF file:", error);
+    } finally {
+      setIsPdfLoading(false);
     }
   };
 
@@ -197,15 +228,62 @@ export default function Editor(
             type="text"
             value={state.invoiceNo || ""}
           />
-          <label className="inline-flex cursor-pointer items-center rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 whitespace-nowrap">
-            Upload UBL
-            <input
-              accept=".xml"
-              className="hidden"
-              onChange={(e) => handleFileUpload(e)}
-              type="file"
-            />
-          </label>
+          
+          {/* Upload Dropdown Button */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="inline-flex cursor-pointer items-center rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 whitespace-nowrap"
+              disabled={isPdfLoading}
+            >
+              {isPdfLoading ? 'Processing...' : 'Upload File'}
+              <svg 
+                className="w-4 h-4 ml-2" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            
+            {dropdownOpen && !isPdfLoading && (
+              <div className="absolute z-10 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                <div className="py-1" role="menu" aria-orientation="vertical">
+                  <label className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                    Upload UBL
+                    <input
+                      accept=".xml"
+                      className="hidden"
+                      onChange={(e) => {
+                        handleFileUpload(e);
+                        setDropdownOpen(false);
+                      }}
+                      type="file"
+                    />
+                  </label>
+                  <PDFUploader dispatch={dispatch} changeDropdownOpen={setDropdownOpen} />
+                  {/* <label className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                    Upload PDF
+                    <input
+                      accept=".pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        handlePdfUpload(e);
+                        setDropdownOpen(false);
+                      }}
+                      type="file"
+                      disabled={isPdfLoading}
+                    />
+                  </label> */}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {isPdfLoading && <span className="ml-3">Extracting data from PDF...</span>}
+          
           <button
             onClick={handleExportPDF}
             style={{ backgroundColor: "#000" }}
@@ -213,7 +291,6 @@ export default function Editor(
           >
             Export PDF
           </button>
-          <PDFUploader dispatch={dispatch} />
         </div>
 
         {/* Toggle between upload and status */}
