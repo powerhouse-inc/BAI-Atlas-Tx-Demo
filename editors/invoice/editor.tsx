@@ -20,6 +20,7 @@ import { DateTimeLocalInput } from "./dateTimeLocalInput";
 import { LegalEntityForm } from "./legalEntity/legalEntity";
 import { LineItemsTable } from "./lineItems";
 import { loadUBLFile } from "./ingestUBL";
+import PDFUploader from "./ingestPDF";
 import RequestFinance from "./requestFinance";
 import InvoiceToGnosis from "./invoiceToGnosis";
 import axios from "axios";
@@ -41,6 +42,11 @@ export default function Editor(
   const state = doc.state.global;
 
   const [fiatMode, setFiatMode] = useState(state.currency != "USDS");
+
+  // Add this useEffect to watch for currency changes
+  useEffect(() => {
+    setFiatMode(state.currency !== "USDS");
+  }, [state.currency]);
 
   const itemsTotalTaxExcl = useMemo(() => {
     return state.lineItems.reduce((total, lineItem) => {
@@ -207,6 +213,7 @@ export default function Editor(
           >
             Export PDF
           </button>
+          <PDFUploader dispatch={dispatch} />
         </div>
 
         {/* Toggle between upload and status */}
