@@ -142,7 +142,7 @@ function mapDocumentAiToInvoice(
         lineItems: []
     };
 
-    // Initialize issuer if it doesn't exist
+    // 1. Initialize base issuer structure if it doesn't exist
     if (!invoiceData.issuer) {
         invoiceData.issuer = {
             name: null,
@@ -157,37 +157,88 @@ function mapDocumentAiToInvoice(
         };
     }
 
-    // Initialize payer if it doesn't exist
-    if (!invoiceData.payer) {
-        invoiceData.payer = {
-            name: null,
-            address: null,
-            contactInfo: {
-                email: null,
-                tel: null
+    // 2. Initialize payment routing structure once if needed
+    if (!invoiceData.issuer.paymentRouting) {
+        invoiceData.issuer.paymentRouting = {
+            bank: {
+                name: "",
+                accountNum: "",
+                ABA: "",
+                BIC: "",
+                SWIFT: "",
+                accountType: "CHECKING",
+                beneficiary: "",
+                memo: "",
+                address: {
+                    streetAddress: "",
+                    city: "",
+                    stateProvince: "",
+                    postalCode: "",
+                    country: "",
+                    extendedAddress: ""
+                },
+                intermediaryBank: null
             },
-            country: null,
-            id: null,
-            paymentRouting: null
+            wallet: {
+                address: "",
+                chainId: "",
+                chainName: "",
+                rpc: ""
+            }
         };
     }
 
-    // Initialize issuer's payment routing if it doesn't exist
-    if (!invoiceData.issuer!.paymentRouting) {
-        invoiceData.issuer!.paymentRouting = {
-            bank: null,
-            wallet: null
-        };
-    }
-
-    const monthMap: {[key: string]: string} = {
-        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-    };
-    
+    // 3. Process all entities and update the single payment routing object
     entities.forEach(entity => {
         switch(entity.type) {
+            case 'supplier_bank_details':
+                entity.children?.forEach(child => {
+                    const bank = invoiceData.issuer!.paymentRouting!.bank!;
+                    switch(child.type) {
+                        case 'supplier_bank_details/bank_name':
+                            bank.name = child.mentionText;
+                            break;
+                        case 'supplier_bank_details/bank_iban':
+                            bank.accountNum = child.mentionText;
+                            break;
+                        case 'supplier_bank_details/aba_bic_swift_number':
+                            bank.SWIFT = child.mentionText;
+                            break;
+                        case 'supplier_bank_details/bank_account_type':
+                            bank.accountType = child.mentionText as 'CHECKING' | 'SAVINGS';
+                            break;
+                        case 'supplier_bank_details/beneficiary_name':
+                            bank.beneficiary = child.mentionText;
+                            break;
+                    }
+                });
+                break;
+
+            case 'crypto_account_details':
+                entity.children?.forEach(child => {
+                    const wallet = invoiceData.issuer!.paymentRouting!.wallet!;
+                    switch(child.type) {
+                        case 'crypto_account_details/account_address':
+                            let address = child.mentionText;
+                            if (address.startsWith('Ox')) {
+                                address = '0x' + address.slice(2);
+                            }
+                            wallet.address = address;
+                            break;
+                        case 'crypto_account_details/chain_name':
+                            wallet.chainName = child.mentionText;
+                            break;
+                        case 'crypto_account_details/chain_id':
+                            wallet.chainId = child.mentionText;
+                            break;
+                    }
+                });
+                break;
+
+            case 'supplier_iban':
+                invoiceData.issuer!.paymentRouting!.bank!.accountNum = entity.mentionText;
+                break;
+
             case 'invoice_id':
                 invoiceData.invoiceNo = entity.mentionText;
                 break;
@@ -282,76 +333,6 @@ function mapDocumentAiToInvoice(
                     currency: invoiceData.currency || 'USD',
                     id: crypto.randomUUID(),
                     taxPercent: 0
-                });
-                break;
-
-            case 'supplier_iban':
-                if (!invoiceData.issuer!.paymentRouting?.wallet) {
-                    const existingBank = invoiceData.issuer!.paymentRouting?.bank || {
-                        name: "",
-                        address: {
-                            streetAddress: "",
-                            city: "",
-                            stateProvince: "",
-                            postalCode: "",
-                            country: "",   
-                            extendedAddress: ""
-                        },
-                        accountNum: "",
-                        ABA: null,
-                        BIC: null,
-                        SWIFT: null,
-                        accountType: null,
-                        beneficiary: null,
-                        intermediaryBank: null,
-                        memo: null
-                    };
-
-                    invoiceData.issuer!.paymentRouting = {
-                        ...invoiceData.issuer!.paymentRouting,
-                        bank: {
-                            ...existingBank,
-                            accountNum: entity.mentionText
-                        },
-                        wallet: null
-                    };
-                }
-                break;
-
-            case 'crypto_account_details':
-                // Initialize wallet object if it doesn't exist
-                if (!invoiceData.issuer!.paymentRouting) {
-                    invoiceData.issuer!.paymentRouting = {
-                        bank: null,
-                        wallet: {
-                            address: null,
-                            chainId: null,
-                            chainName: null,
-                            rpc: null
-                        }
-                    };
-                } else if (!invoiceData.issuer!.paymentRouting.wallet) {
-                    invoiceData.issuer!.paymentRouting.wallet = {
-                        address: null,
-                        chainId: null,
-                        chainName: null,
-                        rpc: null
-                    };
-                }
-
-                // Process child entities
-                entity.children?.forEach(child => {
-                    switch(child.type) {
-                        case 'crypto_account_details/account_address':
-                            invoiceData.issuer!.paymentRouting!.wallet!.address = child.mentionText;
-                            break;
-                        case 'crypto_account_details/chain_name':
-                            invoiceData.issuer!.paymentRouting!.wallet!.chainName = child.mentionText;
-                            break;
-                        case 'crypto_account_details/chain_id':
-                            invoiceData.issuer!.paymentRouting!.wallet!.chainId = child.mentionText;
-                            break;
-                    }
                 });
                 break;
 
