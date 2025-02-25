@@ -21,8 +21,6 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { InvoicePDF } from "./InvoicePDF";
 import { createRoot } from "react-dom/client";
 
-import Toggle from "react-toggle";
-import "./toggle.css";
 import { downloadUBL, exportToUBL } from "./exportUBL";
 
 export default function Editor(
@@ -35,8 +33,10 @@ export default function Editor(
   const state = doc.state.global;
 
   const [fiatMode, setFiatMode] = useState(state.currency != "USDS");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [uploadDropdownOpen, setUploadDropdownOpen] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const uploadDropdownRef = useRef<HTMLDivElement>(null);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   // Add this useEffect to watch for currency changes
@@ -44,11 +44,14 @@ export default function Editor(
     setFiatMode(state.currency !== "USDS");
   }, [state.currency]);
 
-  // Add click outside listener to close dropdown
+  // Add click outside listener to close dropdowns
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
+      if (uploadDropdownRef.current && !uploadDropdownRef.current.contains(event.target as Node)) {
+        setUploadDropdownOpen(false);
+      }
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setExportDropdownOpen(false);
       }
     }
     
@@ -104,9 +107,15 @@ export default function Editor(
 
     try {
       await loadUBLFile({ file, dispatch });
+      toast("UBL file uploaded successfully", {
+        type: "success",
+      });
     } catch (error) {
       // Handle error presentation to user
       console.error("Failed to load UBL file:", error);
+      toast("Failed to load UBL file", {
+        type: "error",
+      });
     }
   };
 
@@ -235,9 +244,9 @@ export default function Editor(
           />
           
           {/* Upload Dropdown Button */}
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative" ref={uploadDropdownRef}>
             <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+              onClick={() => setUploadDropdownOpen(!uploadDropdownOpen)}
               className="inline-flex cursor-pointer items-center rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 whitespace-nowrap"
               disabled={isPdfLoading}
             >
@@ -253,7 +262,7 @@ export default function Editor(
               </svg>
             </button>
             
-            {dropdownOpen && !isPdfLoading && (
+            {uploadDropdownOpen && !isPdfLoading && (
               <div className="absolute z-10 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                 <div className="py-1" role="menu" aria-orientation="vertical">
                   <label className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
@@ -263,67 +272,64 @@ export default function Editor(
                       className="hidden"
                       onChange={(e) => {
                         handleFileUpload(e);
-                        setDropdownOpen(false);
+                        setUploadDropdownOpen(false);
                       }}
                       type="file"
                     />
                   </label>
-                  <PDFUploader dispatch={dispatch} changeDropdownOpen={setDropdownOpen} />
-                  {/* <label className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                    Upload PDF
-                    <input
-                      accept=".pdf"
-                      className="hidden"
-                      onChange={(e) => {
-                        handlePdfUpload(e);
-                        setDropdownOpen(false);
-                      }}
-                      type="file"
-                      disabled={isPdfLoading}
-                    />
-                  </label> */}
+                  <PDFUploader dispatch={dispatch} changeDropdownOpen={setUploadDropdownOpen} />
                 </div>
               </div>
             )}
           </div>
           
-          {isPdfLoading && <span className="ml-3">Extracting data from PDF...</span>}
-          
-          <button
-            onClick={handleExportUBL}
-            style={{ backgroundColor: "#000" }}
-            className="inline-flex cursor-pointer items-center rounded px-4 py-2 text-white hover:bg-gray-800 whitespace-nowrap"
-          >
-            Export UBL
-          </button>
-          <button
-            onClick={handleExportPDF}
-            style={{ backgroundColor: "#000" }}
-            className="inline-flex cursor-pointer items-center rounded px-4 py-2 text-white hover:bg-gray-800 whitespace-nowrap"
-          >
-            Export PDF
-          </button>
+          {/* Export Dropdown Button */}
+          <div className="relative" ref={exportDropdownRef}>
+            <button
+              onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+              style={{ backgroundColor: "#000" }}
+              className="inline-flex cursor-pointer items-center rounded px-4 py-2 text-white hover:bg-gray-800 whitespace-nowrap"
+            >
+              Export File
+              <svg 
+                className="w-4 h-4 ml-2" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            
+            {exportDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                <div className="py-1" role="menu" aria-orientation="vertical">
+                  <button
+                    onClick={() => {
+                      handleExportUBL();
+                      setExportDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Export UBL
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleExportPDF();
+                      setExportDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Export PDF
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Toggle between upload and status
-        // <div className="flex items-center gap-2">
-        //   <span
-        //     className={`text-sm font-medium ${!fiatMode ? "text-purple-600" : "text-gray-500"}`}
-        //   >
-        //     Crypto
-        //   </span>
-        //   <Toggle
-        //     checked={fiatMode}
-        //     onChange={() => setFiatMode(!fiatMode)}
-        //     icons={false}
-        //   />
-        //   <span
-        //     className={`text-sm font-medium ${fiatMode ? "text-green-600" : "text-gray-500"}`}
-        //   >
-        //     Fiat
-        //   </span>
-        // </div> */}
-
+        {/* Currency selector */}
         <div className="flex items-center gap-2">
           <select
             id="currency"
