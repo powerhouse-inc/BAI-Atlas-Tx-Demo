@@ -221,9 +221,9 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({
               {formatCurrency(
                 invoice.lineItems.reduce(
                   (sum, item) => sum + item.quantity * item.unitPriceTaxExcl,
-                  0
+                  0,
                 ),
-                invoice.currency
+                invoice.currency,
               )}
             </Text>
           </View>
@@ -233,9 +233,9 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({
               {formatCurrency(
                 invoice.lineItems.reduce(
                   (sum, item) => sum + item.quantity * item.unitPriceTaxIncl,
-                  0
+                  0,
                 ),
-                invoice.currency
+                invoice.currency,
               )}
             </Text>
           </View>

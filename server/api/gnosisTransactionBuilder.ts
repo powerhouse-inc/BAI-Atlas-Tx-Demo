@@ -3,8 +3,6 @@ import dotenv from 'dotenv'
 import { ethers } from 'ethers'
 import { updateInvoiceStatus } from '../../scripts/invoice/main';
 
-console.log('Starting Gnosis Safe transfer...')
-
 dotenv.config()
 
 /**
