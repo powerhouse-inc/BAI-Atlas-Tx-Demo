@@ -42,11 +42,6 @@ export class UBLConverter {
     this.processLineItems(invoice);
   }
 
-  // private getElementText(parent: Element, selector: string): string {
-  //   const element = parent.querySelector(selector);
-  //   return element ? element.textContent || "" : "";
-  // }
-
   getElementText(
     node: Element,
     selector: string,
@@ -80,7 +75,9 @@ export class UBLConverter {
           this.getElementText(
             invoice,
             "ActualDeliveryDate, cbc\\:ActualDeliveryDate",
-          ) || null,
+          ) ||
+          this.getElementText(invoice, "TaxPointDate, cbc\\:TaxPointDate") ||
+          null,
         currency:
           this.getElementText(invoice, "CurrencyCode, cbc\\:CurrencyCode") ||
           this.getElementText(
@@ -89,23 +86,6 @@ export class UBLConverter {
           ),
       }),
     );
-
-    //   // Process document references
-    //   const refs = invoice.querySelectorAll(
-    //     "AdditionalDocumentReference, cac\\:AdditionalDocumentReference",
-    //   );
-    //   refs.forEach((ref) => {
-    //     this.dispatch(
-    //       actions.addRef({
-    //         id: this.getElementText(ref, "ID, cbc\\:ID"),
-    //         value:
-    //           this.getElementText(
-    //             ref,
-    //             "DocumentDescription, cbc\\:DocumentDescription",
-    //           ) || this.getElementText(ref, "ID, cbc\\:ID"),
-    //       }),
-    //     );
-    //   });
   }
 
   private processParties(invoice: Element) {
@@ -175,19 +155,13 @@ export class UBLConverter {
               accountNum:
                 this.getElementText(financialAccount, "cbc\\:ID, ID", "IBAN") ??
                 this.getElementText(financialAccount, "cbc\\:ID, ID"),
-
               BIC: this.getElementText(financialAccount, "cbc\\:ID, ID", "BIC"),
-
               SWIFT: this.getElementText(
                 financialAccount,
                 "cbc\\:ID, ID",
                 "SWIFT",
               ),
-
-              // ABA extraction
               ABA: this.getElementText(financialAccount, "cbc\\:ID, ID", "ABA"),
-
-              // Name remains unchanged
               name: this.getElementText(
                 financialAccount,
                 "FinancialInstitutionBranch FinancialInstitution Name, " +

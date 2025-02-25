@@ -29,10 +29,74 @@ export const LegalEntityWalletSection = (
 
   const CHAIN_PRESETS = [
     {
-      chainName: "base",
+      chainName: "Base",
       chainId: "8453",
     },
+    {
+      chainName: "Ethereum",
+      chainId: "1",
+    },
+    {
+      chainName: "Arbitrum One",
+      chainId: "42161",
+    },
+    {
+      chainName: "Gnosis",
+      chainId: "100",
+    },
   ];
+
+  const renderPresets = () => {
+    const activePreset = CHAIN_PRESETS.find(
+      (p) => p.chainName == value.chainName,
+    );
+
+    const handleSelectPreset = (e: { target: { value: string } }) => {
+      const preset = CHAIN_PRESETS.find(
+        (p) => p.chainName == e.target.value && p.chainId !== "0",
+      );
+      if (preset) {
+        onChange({
+          chainId: preset.chainId,
+          chainName: preset.chainName,
+        });
+      }
+    };
+
+    return (
+      <div className={"px-4 py-2"}>
+        <select
+          className={
+            "px-4 py-2 rounded-full font-semibold text-sm bg-gray-200 text-gray-800"
+          }
+          onBlur={handleSelectPreset}
+          onChange={handleSelectPreset}
+        >
+          {activePreset ? (
+            <option key={activePreset.chainId} value={activePreset.chainName}>
+              {activePreset.chainName}
+            </option>
+          ) : (
+            <option key={0} value={0}>
+              Select Chain
+            </option>
+          )}
+          {CHAIN_PRESETS.filter((p) => p.chainId !== activePreset?.chainId).map(
+            (preset) => (
+              <option key={preset.chainId} value={preset.chainName}>
+                {preset.chainName}
+              </option>
+            ),
+          )}
+        </select>
+        {value.chainName !== "Base" && (
+          <div className="space-y-4" style={{ color: "red" }}>
+            Unsupported Chain
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div
@@ -43,58 +107,14 @@ export const LegalEntityWalletSection = (
       )}
     >
       <div className="grid grid-cols-2 gap-4 items-center">
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">
+        <h3 className="mb-4 text-lg font-semibold text-gray-200">
           Wallet Information
         </h3>
 
-        <select
-          className={
-            "px-4 py-2 rounded-full font-semibold text-sm bg-gray-200 text-gray-800"
-          }
-          onBlur={(e) => {
-            const preset = CHAIN_PRESETS.find(
-              (p) => p.chainName == e.target.value,
-            );
-            if (preset) {
-              onChange({
-                ["chainId"]: preset.chainId,
-                ["chainName"]: preset.chainName,
-              });
-            }
-          }}
-        >
-          {CHAIN_PRESETS.map((preset) => (
-            <option key={preset.chainId} value={preset.chainName}>
-              {preset.chainName}
-            </option>
-          ))}
-        </select>
+        {renderPresets()}
       </div>
 
       <div className="space-y-6">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <FieldLabel>Chain Name</FieldLabel>
-              <TextInput
-                disabled={disabled}
-                onChange={(e) => handleInputChange("chainName", e)}
-                placeholder="Chain Name"
-                value={value.chainName ?? ""}
-              />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Chain ID</FieldLabel>
-              <TextInput
-                disabled={disabled}
-                onChange={(e) => handleInputChange("chainId", e)}
-                placeholder="Chain ID"
-                value={value.chainId ?? ""}
-              />
-            </div>
-          </div>
-        </div>
-
         <div className="space-y-4">
           <FieldLabel>Wallet Address</FieldLabel>
           <TextInput
