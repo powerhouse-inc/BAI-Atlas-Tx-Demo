@@ -1,6 +1,5 @@
 import { EditorProps } from "document-model/document";
 import { useState } from "react";
-import confetti from "canvas-confetti";
 import {
   AccountsState,
   AccountsAction,
@@ -29,13 +28,6 @@ export default function Editor(props: IProps) {
     type: "Protocol",
   });
 
-  const fireConfetti = () => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-    });
-  };
 
   const handleCreateAccount = () => {
     console.log("Creating account:", newAccount);
@@ -52,8 +44,6 @@ export default function Editor(props: IProps) {
       type: "Protocol",
     });
 
-    // Fire confetti after successful creation
-    fireConfetti();
   };
 
   return (
