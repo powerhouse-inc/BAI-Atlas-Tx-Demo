@@ -150,25 +150,42 @@ export class UBLConverter {
         );
 
         if (financialAccount) {
-          this.dispatch(
-            actions.editIssuerBank({
-              accountNum:
-                this.getElementText(financialAccount, "cbc\\:ID, ID", "IBAN") ??
-                this.getElementText(financialAccount, "cbc\\:ID, ID"),
-              BIC: this.getElementText(financialAccount, "cbc\\:ID, ID", "BIC"),
-              SWIFT: this.getElementText(
-                financialAccount,
-                "cbc\\:ID, ID",
-                "SWIFT",
-              ),
-              ABA: this.getElementText(financialAccount, "cbc\\:ID, ID", "ABA"),
-              name: this.getElementText(
-                financialAccount,
-                "FinancialInstitutionBranch FinancialInstitution Name, " +
-                  "cac\\:FinancialInstitutionBranch cac\\:FinancialInstitution cbc\\:Name",
-              ),
-            }),
-          );
+          const walletAddress = this.getElementText(financialAccount, "cbc\\:ID, ID", "walletAddress");
+          if (walletAddress) {
+            this.dispatch(
+              actions.editIssuerWallet({
+                address: walletAddress,
+                chainName: this.getElementText(financialAccount, "cbc\\:ID, ID", "chainName"),
+                chainId: this.getElementText(financialAccount, "cbc\\:ID, ID", "chainId"),
+              }),
+            );
+          } else {
+            this.dispatch(
+              actions.editIssuerBank({
+                accountNum:
+                  this.getElementText(financialAccount, "cbc\\:ID, ID", "IBAN") ??
+                  this.getElementText(financialAccount, "cbc\\:ID, ID"),
+                BIC: this.getElementText(financialAccount, "cbc\\:ID, ID", "BIC"),
+                SWIFT: this.getElementText(
+                  financialAccount,
+                  "cbc\\:ID, ID",
+                  "SWIFT",
+                ),
+                ABA: this.getElementText(financialAccount, "cbc\\:ID, ID", "ABA"),
+                name: this.getElementText(
+                  financialAccount,
+                  "FinancialInstitutionBranch FinancialInstitution Name, " +
+                    "cac\\:FinancialInstitutionBranch cac\\:FinancialInstitution cbc\\:Name",
+                ),
+                  streetAddress: this.getElementText(financialAccount, "cbc\\:StreetName, StreetName", "streetAddress"),
+                  extendedAddress: this.getElementText(financialAccount, "cbc\\:AdditionalStreetName, AdditionalStreetName", "extendedAddress"),
+                  city: this.getElementText(financialAccount, "cbc\\:CityName, CityName", "city"),
+                  stateProvince: this.getElementText(financialAccount, "cbc\\:CountrySubentity, CountrySubentity", "stateProvince"),
+                  postalCode: this.getElementText(financialAccount, "cbc\\:PostalZone, PostalZone", "postalCode"),
+                  country: this.getElementText(financialAccount, "cbc\\:IdentificationCode, IdentificationCode", "country"),
+              }),
+            );
+          }
         }
       }
     }
