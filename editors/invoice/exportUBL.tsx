@@ -224,7 +224,22 @@ export class UBLExporter {
    * Generate the PaymentMeans section with bank details
    */
   private generatePaymentMeans(): string {
-    if (!this.invoice.issuer?.paymentRouting?.bank?.accountNum) return "";
+    if (
+      !this.invoice.issuer?.paymentRouting?.bank?.accountNum &&
+      !this.invoice.issuer?.paymentRouting?.wallet?.address
+    )
+      return "";
+
+    if (this.invoice.issuer?.paymentRouting?.wallet?.address) {
+      return `<cac:PaymentMeans>
+      <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>
+      <cac:PayeeFinancialAccount>
+        <cbc:ID schemeID="walletAddress">${this.escapeXml(this.invoice.issuer.paymentRouting?.wallet.address)}</cbc:ID>
+        <cbc:ID schemeID="chainName">${this.escapeXml(this.invoice.issuer.paymentRouting?.wallet.chainName || "")}</cbc:ID>
+        <cbc:ID schemeID="chainId">${this.escapeXml(this.invoice.issuer.paymentRouting?.wallet.chainId || "")}</cbc:ID>
+      </cac:PayeeFinancialAccount>
+    </cac:PaymentMeans>`;
+    }
 
     return `<cac:PaymentMeans>
   <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>
@@ -238,6 +253,12 @@ export class UBLExporter {
         ? `<cac:FinancialInstitutionBranch>
       <cac:FinancialInstitution>
         <cbc:Name>${this.escapeXml(this.invoice.issuer.paymentRouting?.bank.name)}</cbc:Name>
+      ${this.invoice.issuer.paymentRouting?.bank.address?.streetAddress ? `<cbc:StreetName schemeID="streetAddress">${this.escapeXml(this.invoice.issuer.paymentRouting?.bank.address.streetAddress)}</cbc:StreetName>` : ""}
+      ${this.invoice.issuer.paymentRouting?.bank.address?.extendedAddress ? `<cbc:AdditionalStreetName schemeID="extendedAddress">${this.escapeXml(this.invoice.issuer.paymentRouting?.bank.address.extendedAddress)}</cbc:AdditionalStreetName>` : ""}
+      ${this.invoice.issuer.paymentRouting?.bank.address?.city ? `<cbc:CityName schemeID="city">${this.escapeXml(this.invoice.issuer.paymentRouting?.bank.address.city)}</cbc:CityName>` : ""}
+      ${this.invoice.issuer.paymentRouting?.bank.address?.stateProvince ? `<cbc:CountrySubentity schemeID="stateProvince">${this.escapeXml(this.invoice.issuer.paymentRouting?.bank.address.stateProvince)}</cbc:CountrySubentity>` : ""}
+      ${this.invoice.issuer.paymentRouting?.bank.address?.postalCode ? `<cbc:PostalZone schemeID="postalCode">${this.escapeXml(this.invoice.issuer.paymentRouting?.bank.address.postalCode)}</cbc:PostalZone>` : ""}
+      ${this.invoice.issuer.paymentRouting?.bank.address?.country ? `<cac:Country><cbc:IdentificationCode schemeID="country">${this.escapeXml(this.invoice.issuer.paymentRouting?.bank.address.country)}</cbc:IdentificationCode></cac:Country>` : ""}
       </cac:FinancialInstitution>
     </cac:FinancialInstitutionBranch>`
         : ""
@@ -269,7 +290,7 @@ export class UBLExporter {
 
     let taxTotal = `<cac:TaxTotal>
   <cbc:TaxAmount currencyID="${this.escapeXml(this.invoice.currency || "USD")}">${Array.from(
-    taxGroups.values(),
+    taxGroups.values()
   )
     .reduce((sum, amount) => sum + amount, 0)
     .toFixed(2)}</cbc:TaxAmount>`;
@@ -308,14 +329,14 @@ export class UBLExporter {
     // Calculate totals
     const lineExtensionAmount = this.invoice.lineItems.reduce(
       (sum, item) => sum + item.totalPriceTaxExcl,
-      0,
+      0
     );
 
     const taxExclusiveAmount = lineExtensionAmount;
 
     const taxInclusiveAmount = this.invoice.lineItems.reduce(
       (sum, item) => sum + item.totalPriceTaxIncl,
-      0,
+      0
     );
 
     const payableAmount = taxInclusiveAmount;
@@ -338,7 +359,7 @@ export class UBLExporter {
       .map((item, index) => {
         const lineId = item.id || (index + 1).toString();
         const currency = this.escapeXml(
-          item.currency || this.invoice.currency || "USD",
+          item.currency || this.invoice.currency || "USD"
         );
         const taxAmount = item.totalPriceTaxIncl - item.totalPriceTaxExcl;
 

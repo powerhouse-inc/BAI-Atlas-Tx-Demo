@@ -134,6 +134,25 @@ function convertCurrencySymbolToCode(symbol: string): string {
     return currencyMap[symbol.trim()] || symbol;
 }
 
+function normalizeChainName(chainName: string): string {
+    // Convert to lowercase for case-insensitive comparison
+    const lowercaseName = chainName.toLowerCase();
+    
+    // Map of known chain names (lowercase) to their standardized versions
+    const chainNameMap: { [key: string]: string } = {
+        'base': 'Base',
+        // Add more chain mappings as needed
+        'ethereum': 'Ethereum',
+        'polygon': 'Polygon',
+        'arbitrum': 'Arbitrum',
+        'optimism': 'Optimism',
+        'avalanche': 'Avalanche'
+    };
+    
+    // Return the standardized name if found, otherwise return the original
+    return chainNameMap[lowercaseName] || chainName;
+}
+
 function mapDocumentAiToInvoice(
     entities: DocumentAIEntity[], 
     existingInvoice?: Partial<InvoiceState>
@@ -157,7 +176,22 @@ function mapDocumentAiToInvoice(
         };
     }
 
-    // 2. Initialize payment routing structure once if needed
+    // 2. Initialize base payer structure if it doesn't exist
+    if (!invoiceData.payer) {
+        invoiceData.payer = {
+            name: null,
+            address: null,
+            contactInfo: {
+                email: null,
+                tel: null
+            },
+            country: null,
+            id: null,
+            paymentRouting: null
+        };
+    }
+
+    // 3. Initialize payment routing structure once if needed
     if (!invoiceData.issuer.paymentRouting) {
         invoiceData.issuer.paymentRouting = {
             bank: {
@@ -188,7 +222,7 @@ function mapDocumentAiToInvoice(
         };
     }
 
-    // 3. Process all entities and update the single payment routing object
+    // 4. Process all entities and update the single payment routing object
     entities.forEach(entity => {
         switch(entity.type) {
             case 'supplier_bank_details':
@@ -226,7 +260,7 @@ function mapDocumentAiToInvoice(
                             wallet.address = address;
                             break;
                         case 'crypto_account_details/chain_name':
-                            wallet.chainName = child.mentionText;
+                            wallet.chainName = normalizeChainName(child.mentionText);
                             break;
                         case 'crypto_account_details/chain_id':
                             wallet.chainId = child.mentionText;
