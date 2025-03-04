@@ -153,6 +153,26 @@ function normalizeChainName(chainName: string): string {
     return chainNameMap[lowercaseName] || chainName;
 }
 
+function normalizeAccountType(accountType: string): 'CHECKING' | 'SAVINGS' {
+    // Convert to lowercase for case-insensitive comparison
+    const lowercaseType = accountType.toLowerCase().trim();
+    
+    // Map of account type variations to standardized versions
+    const accountTypeMap: { [key: string]: 'CHECKING' | 'SAVINGS' } = {
+        'checking': 'CHECKING',
+        'check': 'CHECKING',
+        'chk': 'CHECKING',
+        'current': 'CHECKING',  // Some countries call checking accounts "current accounts"
+        'savings': 'SAVINGS',
+        'saving': 'SAVINGS',
+        'save': 'SAVINGS',
+        'sav': 'SAVINGS'
+    };
+    
+    // Return the standardized type if found, otherwise default to CHECKING
+    return accountTypeMap[lowercaseType] || 'CHECKING';
+}
+
 function mapDocumentAiToInvoice(
     entities: DocumentAIEntity[], 
     existingInvoice?: Partial<InvoiceState>
@@ -239,7 +259,7 @@ function mapDocumentAiToInvoice(
                             bank.SWIFT = child.mentionText;
                             break;
                         case 'supplier_bank_details/bank_account_type':
-                            bank.accountType = child.mentionText as 'CHECKING' | 'SAVINGS';
+                            bank.accountType = normalizeAccountType(child.mentionText);
                             break;
                         case 'supplier_bank_details/beneficiary_name':
                             bank.beneficiary = child.mentionText;
@@ -402,25 +422,19 @@ function mapDocumentAiToInvoice(
                     payerStreetAddress = payerAddressLines[0]; // "The North Atrium"
                     
                     if (payerAddressLines[1]) {
-                        payerExtendedAddress = payerAddressLines[1]; // "3rd Floor, unit 02."
+                        const cityStateZipMatch = payerAddressLines[1].match(/([^,]+),\s*(\w+)\s+(\d+)/);
+                        if (cityStateZipMatch) {
+                            payerCity = cityStateZipMatch[1].trim();
+                            payerStateProvince = cityStateZipMatch[2].trim();
+                            payerPostalCode = cityStateZipMatch[3].trim();
+                        } else {
+                            // Fallback if the pattern doesn't match
+                            payerExtendedAddress = payerAddressLines[1];
+                        }
                     }
 
                     if (payerAddressLines[2]) {
-                        payerStateProvince = payerAddressLines[2]; // "AS. Fortuna Streets/MC.Briones Sts. Guizo"
-                    }
-
-                    if (payerAddressLines[3]) {
-                        // Parse "Mandaue City 6014 Cebu Philippines"
-                        const lastLine = payerAddressLines[3];
-                        const cityMatch = lastLine.match(/^(.*?)\s+(\d{4})\s+(.*)$/);
-                        if (cityMatch) {
-                            payerCity = cityMatch[1];         // "Mandaue City"
-                            payerPostalCode = cityMatch[2];   // "6014"
-                            payerCountry = cityMatch[3];      // "Cebu Philippines"
-                        } else {
-                            // Fallback if the pattern doesn't match
-                            payerCity = lastLine;
-                        }
+                        payerCountry = payerAddressLines[2].trim();
                     }
                 }
 
