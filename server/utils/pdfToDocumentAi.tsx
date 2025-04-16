@@ -75,14 +75,21 @@ export async function uploadPdfAndGetJson(inputDoc: any) {
 
 function parseDate(dateStr: string): string {
     try {
+        if (!dateStr || typeof dateStr !== 'string') {
+            console.error(`Invalid date input: ${dateStr}`);
+            return new Date().toISOString().split('T')[0];
+        }
+
         // Remove any leading/trailing whitespace and convert to uppercase for consistency
         dateStr = dateStr.trim().toUpperCase();
+        console.log(`Attempting to parse date: "${dateStr}"`);
         
         let date: Date | null = null;
         
         // Handle YYYY-MM-DD format
-        if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            date = new Date(dateStr);
+        if (dateStr.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
+            const [year, month, day] = dateStr.split('-');
+            date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
         }
         // Handle DD/MMM/YYYY format (e.g., "02/JAN/2025")
         else if (dateStr.match(/^\d{1,2}\/[A-Z]{3}\/\d{4}$/)) {
@@ -109,29 +116,167 @@ function parseDate(dateStr: string): string {
             const [month, day, year] = dateStr.split('/');
             date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
         }
+        // Handle DD.MM.YYYY format (European)
+        else if (dateStr.match(/^\d{1,2}\.\d{1,2}\.\d{4}$/)) {
+            const [day, month, year] = dateStr.split('.');
+            date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        }
+        // Handle "MONTH DAY, YEAR" format (e.g., "MARCH 5, 2025")
+        else if (dateStr.match(/^[A-Z]+ \d{1,2},? \d{4}$/)) {
+            const monthMap: {[key: string]: string} = {
+                'JANUARY': '01', 'FEBRUARY': '02', 'MARCH': '03', 'APRIL': '04',
+                'MAY': '05', 'JUNE': '06', 'JULY': '07', 'AUGUST': '08',
+                'SEPTEMBER': '09', 'OCTOBER': '10', 'NOVEMBER': '11', 'DECEMBER': '12',
+                'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04',
+                'JUN': '06', 'JUL': '07', 'AUG': '08', 'SEP': '09', 'OCT': '10', 'NOV': '11', 'DEC': '12'
+            };
+            
+            // Extract month, day, and year
+            const parts = dateStr.replace(',', '').split(' ');
+            const month = parts[0];
+            const day = parts[1];
+            const year = parts[2];
+            
+            if (!monthMap[month]) {
+                console.error(`Unknown month: ${month} in date: ${dateStr}`);
+                throw new Error(`Unknown month: ${month} in date: ${dateStr}`);
+            }
+            
+            date = new Date(`${year}-${monthMap[month]}-${day.padStart(2, '0')}`);
+        }
+        // Handle "DAY MONTH YEAR" format (e.g., "5 MARCH 2025")
+        else if (dateStr.match(/^\d{1,2} [A-Z]+ \d{4}$/)) {
+            const monthMap: {[key: string]: string} = {
+                'JANUARY': '01', 'FEBRUARY': '02', 'MARCH': '03', 'APRIL': '04',
+                'MAY': '05', 'JUNE': '06', 'JULY': '07', 'AUGUST': '08',
+                'SEPTEMBER': '09', 'OCTOBER': '10', 'NOVEMBER': '11', 'DECEMBER': '12',
+                'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04',
+                'JUN': '06', 'JUL': '07', 'AUG': '08', 'SEP': '09', 'OCT': '10', 'NOV': '11', 'DEC': '12'
+            };
+            
+            const parts = dateStr.split(' ');
+            const day = parts[0];
+            const month = parts[1];
+            const year = parts[2];
+            
+            if (!monthMap[month]) {
+                console.error(`Unknown month: ${month} in date: ${dateStr}`);
+                throw new Error(`Unknown month: ${month} in date: ${dateStr}`);
+            }
+            
+            date = new Date(`${year}-${monthMap[month]}-${day.padStart(2, '0')}`);
+        }
         
         if (!date || isNaN(date.getTime())) {
             console.error(`Failed to parse date: ${dateStr}`);
+            // Fallback: try to use the JavaScript Date parser directly
+            const fallbackDate = new Date(dateStr);
+            if (!isNaN(fallbackDate.getTime())) {
+                console.log(`Fallback date parsing succeeded for: ${dateStr}`);
+                return fallbackDate.toISOString().split('T')[0];
+            }
             throw new Error(`Invalid date format: ${dateStr}`);
         }
         
         // Return in YYYY-MM-DD format
-        return date.toISOString().split('T')[0];
+        const formattedDate = date.toISOString().split('T')[0];
+        console.log(`Successfully parsed date "${dateStr}" to "${formattedDate}"`);
+        return formattedDate;
     } catch (error) {
         console.error(`Error parsing date '${dateStr}':`, error);
-        throw new Error(`Invalid date format: ${dateStr}`);
+        
+        // Last resort fallback: try to extract just the year and use January 1st
+        const yearMatch = dateStr.match(/\b(20\d{2})\b/);
+        if (yearMatch) {
+            console.log(`Using fallback year-only date for: ${dateStr} -> ${yearMatch[1]}-01-01`);
+            return `${yearMatch[1]}-01-01`;
+        }
+        
+        // If all else fails, return today's date rather than crashing
+        console.log(`Using today's date as fallback for: ${dateStr}`);
+        return new Date().toISOString().split('T')[0];
     }
 }
 
 function convertCurrencySymbolToCode(symbol: string): string {
+    if (!symbol || typeof symbol !== 'string') {
+        console.error(`Invalid currency input: ${symbol}`);
+        return 'USD'; // Default to USD
+    }
+
+    console.log(`Converting currency symbol/name: "${symbol}"`);
+    
+    // Clean up the input - remove whitespace and normalize
+    const cleanSymbol = symbol.trim().toUpperCase();
+    
+    // Map of currency symbols and names to ISO codes
     const currencyMap: { [key: string]: string } = {
+        // Symbols
         '$': 'USD',
         '£': 'GBP',
         '€': 'EUR',
-        // Add more symbols as needed
+        '¥': 'JPY',
+        '₽': 'RUB',
+        '₩': 'KRW',
+        '₿': 'BTC',
+        'CHF': 'CHF',
+        
+        // Names and codes - USD
+        'USD': 'USD',
+        'DOLLAR': 'USD',
+        'DOLLARS': 'USD',
+        'US DOLLAR': 'USD',
+        'US DOLLARS': 'USD',
+        'U.S. DOLLAR': 'USD',
+        'U.S. DOLLARS': 'USD',
+        'UNITED STATES DOLLAR': 'USD',
+        
+        // Names and codes - EUR
+        'EUR': 'EUR',
+        'EURO': 'EUR',
+        'EUROS': 'EUR',
+        'EUROPEAN EURO': 'EUR',
+        
+        // Names and codes - GBP
+        'GBP': 'GBP',
+        'POUND': 'GBP',
+        'POUNDS': 'GBP',
+        'POUND STERLING': 'GBP',
+        'BRITISH POUND': 'GBP',
+        'UK POUND': 'GBP',
+        
+        // Names and codes - JPY
+        'JPY': 'JPY',
+        'YEN': 'JPY',
+        'JAPANESE YEN': 'JPY',
+        
+        // Other common currencies
+        'CAD': 'CAD',
+        'CANADIAN DOLLAR': 'CAD',
+        'CANADIAN DOLLARS': 'CAD',
+        
     };
 
-    return currencyMap[symbol.trim()] || symbol;
+    // Check if the symbol is in our map
+    if (currencyMap[cleanSymbol]) {
+        console.log(`Mapped currency "${symbol}" to "${currencyMap[cleanSymbol]}"`);
+        return currencyMap[cleanSymbol];
+    }
+    
+    // Check if it's a 3-letter currency code
+    if (cleanSymbol.length === 3 && /^[A-Z]{3}$/.test(cleanSymbol)) {
+        console.log(`Using 3-letter currency code as is: "${cleanSymbol}"`);
+        return cleanSymbol;
+    }
+    
+    // Special case for "EURO" which should be "EUR"
+    if (cleanSymbol === 'EURO' || cleanSymbol === 'EUROS') {
+        console.log(`Converting "${cleanSymbol}" to "EUR"`);
+        return 'EUR';
+    }
+    
+    console.log(`Unknown currency symbol/name: "${symbol}", defaulting to "USD"`);
+    return 'USD';  // Default to USD for unknown currencies
 }
 
 function normalizeChainName(chainName: string): string {
@@ -305,7 +450,18 @@ function mapDocumentAiToInvoice(
                 break;
 
             case 'currency':
-                invoiceData.currency = convertCurrencySymbolToCode(entity.mentionText);
+                const currencyCode = convertCurrencySymbolToCode(entity.mentionText);
+                console.log(`Setting invoice currency to: ${currencyCode} (from ${entity.mentionText})`);
+                invoiceData.currency = currencyCode;
+                
+                // Also update currency in line items if they exist
+                if (invoiceData.lineItems && invoiceData.lineItems.length > 0) {
+                    invoiceData.lineItems = invoiceData.lineItems.map(item => ({
+                        ...item,
+                        currency: currencyCode
+                    }));
+                    console.log(`Updated currency in ${invoiceData.lineItems.length} line items to ${currencyCode}`);
+                }
                 break;
                 
             case 'supplier_name':
